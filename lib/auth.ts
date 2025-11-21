@@ -44,6 +44,7 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
     }),
     Credentials({
+      name: 'Credenciais',
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Senha', type: 'password' },
@@ -51,14 +52,22 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
 
+        const email = String(credentials.email).toLowerCase().trim()
+
         const user = await prisma.user.findUnique({
-          where: { email: String(credentials.email).toLowerCase().trim() }
+          where: { email },
         })
 
-        if (!user?.password) return null
+        if (!user || !user.password) return null
 
         const ok = await bcrypt.compare(String(credentials.password), user.password)
-        return ok ? { id: user.id, email: user.email, name: user.name ?? null } : null
+        if (!ok) return null
+
+        return {
+          id: user.id,
+          name: user.name ?? null,
+          email: user.email,
+        }
       },
     }),
   ],
