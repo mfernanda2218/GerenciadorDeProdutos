@@ -65,13 +65,20 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
 
   session: { strategy: 'jwt' },
 
+  // lib/auth.ts → substitua os callbacks por estes
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.id = user.id as string
+      // Na primeira vez que loga (user existe), salva o id no token
+      if (user) {
+        token.id = user.id as string
+      }
       return token
     },
     async session({ session, token }) {
-      if (token.id) session.user.id = token.id as string
+      // Passa o id do token para a session
+      if (token?.id) {
+        session.user.id = token.id as string
+      }
       return session
     },
   },
