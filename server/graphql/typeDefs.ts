@@ -1,27 +1,28 @@
-// src/server/graphql/schema.ts
-export const typeDefs = /* GraphQL */ `
+// graphql/typeDefs.ts
+import { gql } from 'graphql-tag'
+
+export const typeDefs = gql`
   type User {
-    id: ID!
+    id: String!
     name: String
     email: String!
-    provider: String!
-    createdAt: DateTime!
   }
 
   type Product {
-    id: ID!
+    id: Int!
     name: String!
     salePrice: Float!
     costPrice: Float!
     quantity: Int!
     supplier: String!
-    user: User!
+    createdAt: String!
+    updatedAt: String!
   }
 
   type Query {
     me: User
-    products(search: String): [Product!]!
-    product(id: ID!): Product
+    products: [Product!]!
+    product(id: Int!): Product
   }
 
   type Mutation {
@@ -32,14 +33,16 @@ export const typeDefs = /* GraphQL */ `
       quantity: Int!
       supplier: String!
     ): Product!
+
     updateProduct(
-      id: ID!
+      id: Int!
       name: String
       salePrice: Float
       costPrice: Float
       quantity: Int
       supplier: String
-    ): Product!
-    deleteProduct(id: ID!): Boolean!
+    ): Product
+
+    deleteProduct(id: Int!): Boolean!
   }
 `
