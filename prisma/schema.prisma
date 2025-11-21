@@ -1,0 +1,35 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  password  String?  // null se entrou via OAuth
+  provider  String?  // "google" | "github" | "credentials"
+  products  Product[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id           String   @id @default(cuid())
+  name         String
+  salePrice    Decimal  @db.Decimal(10,2)
+  costPrice    Decimal  @db.Decimal(10,2)
+  quantity     Int
+  supplier     String
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+}
