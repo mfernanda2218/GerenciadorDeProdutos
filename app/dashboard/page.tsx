@@ -7,7 +7,6 @@ import { redirect } from 'next/navigation'
 export default async function DashboardPage() {
   const session = await auth()
 
-  // Se não estiver logado → manda pro login
   if (!session?.user) {
     redirect('/login')
   }
