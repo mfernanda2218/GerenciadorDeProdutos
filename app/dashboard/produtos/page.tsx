@@ -1,140 +1,135 @@
-// app/dashboard/produtos/page.tsx
+// app/dashboard/page.tsx
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
+import Link from 'next/link'
+import SearchBar from '@/components/SearchBar'
 
-export default async function ProdutosPage() {
+function formatCurrency(value: number): string {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
+}
+
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: { q?: string }
+}) {
   const session = await auth()
   if (!session?.user?.id) redirect('/login')
 
-  // Busca apenas os produtos do usuário logado
-  const produtos = await prisma.product.findMany({
-    where: { userId: session.user.id as string },
-    orderBy: { createdAt: 'desc' },
-  })
+  const userId = session.user.id as string
+  const query = searchParams.q?.trim()
 
-  const totalProdutos = produtos.length
-  const totalValorEstoque = produtos.reduce((acc, p) => acc + Number(p.salePrice) * p.quantity, 0)
+  // Só busca se tiver termo
+  const produtos = query
+    ? await prisma.product.findMany({
+        where: {
+          userId,
+          OR: [
+            { name: { contains: query, mode: 'insensitive' } },
+            { supplier: { contains: query, mode: 'insensitive' } },
+          ],
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 100,
+      })
+    : []
 
   return (
-    <div className="container mx-auto p-6">
-      {/* Header + Botão Novo */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-        <div>
-          <h1 className="text-4xl font-bold">Meus Produtos</h1>
-          <p className="text-base-content/70 mt-1">
-            {totalProdutos} produto{totalProdutos !== 1 ? 's' : ''} cadastrado{totalProdutos !== 1 ? 's' : ''}
+    <div className="min-h-screen bg-base-200">
+      <div className="container mx-auto p-8 pt-16 max-w-7xl">
+        {/* Título */}
+        <div className="text-center mb-12">
+          <h1 className="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent mb-4">
+            Bem-vindo, {session.user?.name?.split(' ')[0]}!
+          </h1>
+          <p className="text-xl text-base-content/80">
+            Pesquise seus produtos abaixo
           </p>
         </div>
-        <Link
-          href="/dashboard/produtos/novo"
-          className="btn btn-primary gap-2 shadow-lg"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Novo Produto
-        </Link>
-      </div>
 
-      {/* Cards de resumo */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="stats shadow bg-base-100">
-          <div className="stat">
-            <div className="stat-title">Total em Estoque</div>
-            <div className="stat-value text-primary">{totalProdutos}</div>
-          </div>
+        {/* SearchBar centralizado */}
+        <div className="mb-16">
+          <SearchBar />
         </div>
-        <div className="stats shadow bg-base-100">
-          <div className="stat">
-            <div className="stat-title">Valor Total (Venda)</div>
-            <div className="stat-value text-success">
-              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalValorEstoque)}
+
+        {/* Tabela SÓ aparece se tiver pesquisa */}
+        {query && (
+          <div className="bg-base-100 rounded-3xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="p-6 border-b border-base-300">
+              <h2 className="text-2xl font-bold text-primary">
+                Resultados para: <span className="italic">"{query}"</span>
+                {' '}
+                <span className="text-base font-normal text-base-content/70">
+                  ({produtos.length} {produtos.length === 1 ? 'produto' : 'produtos'})
+                </span>
+              </h2>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="table table-lg">
+                <thead>
+                  <tr className="bg-primary text-primary-content">
+                    <th className="rounded-tl-2xl">Produto</th>
+                    <th>Fornecedor</th>
+                    <th className="text-right">Preço Venda</th>
+                    <th className="text-center">Estoque</th>
+                    <th className="text-center rounded-tr-2xl">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {produtos.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="text-center py-16 text-xl text-base-content/60">
+                        Nenhum produto encontrado para "<strong>{query}</strong>"
+                      </td>
+                    </tr>
+                  ) : (
+                    produtos.map((p) => (
+                      <tr key={p.id} className="hover:bg-base-200 transition-colors">
+                        <td className="font-semibold text-lg">{p.name}</td>
+                        <td className="text-base-content/80">{p.supplier || '—'}</td>
+                        <td className="text-right font-bold text-success">
+                          {formatCurrency(Number(p.salePrice))}
+                        </td>
+                        <td className="text-center">
+                          <div className={`badge badge-lg font-bold ${p.quantity <= 5 ? 'badge-warning' : 'badge-success'}`}>
+                            {p.quantity} un
+                          </div>
+                        </td>
+                        <td className="text-center">
+                          <Link href={`/dashboard/produtos/${p.id}`} className="btn btn-primary btn-sm">
+                            Ver
+                          </Link>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
-        </div>
-        <div className="stats shadow bg-base-100">
-          <div className="stat">
-            <div className="stat-title">Produtos com Baixo Estoque</div>
-            <div className="stat-value text-warning">
-              {produtos.filter(p => p.quantity <= 5).length}
-            </div>
-          </div>
-        </div>
-      </div>
+        )}
 
-      {/* Lista de produtos */}
-      {produtos.length === 0 ? (
-        <div className="text-center py-20">
-          <div className="bg-base-200 border-2 border-dashed rounded-xl w-32 h-32 mx-auto mb-6 flex items-center justify-center">
-            <svg className="w-16 h-16 text-base-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.01M8 9h8" />
-            </svg>
+        {/* Se não tiver pesquisa → espaço vazio */}
+        {!query && (
+          <div className="h-64 flex items-center justify-center">
+            <p className="text-2xl text-base-content/50 font-medium text-center">
+              Digite algo acima para buscar seus produtos
+            </p>
           </div>
-          <h3 className="text-2xl font-semibold mb-4">Nenhum produto cadastrado</h3>
-          <p className="text-base-content/70 mb-8">Comece adicionando seu primeiro produto</p>
-          <Link href="/dashboard/produtos/novo" className="btn btn-primary btn-lg">
-            Cadastrar Primeiro Produto
+        )}
+
+        {/* Botão para página completa */}
+        <div className="text-center mt-20">
+          <Link
+            href="/dashboard/produtos"
+            className="btn btn-outline btn-lg btn-wide shadow-xl hover:shadow-2xl"
+          >
+            Ir para Gerenciamento Completo de Produtos
           </Link>
         </div>
-      ) : (
-        <div className="overflow-x-auto bg-base-100 rounded-box shadow-xl">
-          <table className="table table-lg">
-            <thead>
-              <tr className="bg-base-200">
-                <th>Nome</th>
-                <th>Fornecedor</th>
-                <th className="text-right">Preço Venda</th>
-                <th className="text-right">Preço Custo</th>
-                <th className="text-center">Estoque</th>
-                <th className="text-center">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {produtos.map((produto) => {
-                const lucro = Number(produto.salePrice) - Number(produto.costPrice)
-                const margem = ((lucro / Number(produto.salePrice)) * 100).toFixed(1)
-
-                return (
-                  <tr key={produto.id} className="hover">
-                    <td className="font-medium">{produto.name}</td>
-                    <td>{produto.supplier}</td>
-                    <td className="text-right font-semibold text-success">
-                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(produto.salePrice))}
-                    </td>
-                    <td className="text-right text-base-content/70">
-                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(produto.costPrice))}
-                      <span className="text-xs ml-2 opacity-60">({margem}% margem)</span>
-                    </td>
-                    <td className="text-center">
-                        <span className={`badge badge-lg ${produto.quantity <= 5 ? 'badge-error' : produto.quantity <= 15 ? 'badge-warning' : 'badge-success'}`}>
-                          {produto.quantity}
-                        </span>
-                      </td>
-                    <td className="text-center">
-                      <div className="flex justify-center gap-2">
-                        <Link
-                          href={`/dashboard/produtos/${produto.id}`}
-                          className="btn btn-ghost btn-sm"
-                        >
-                          Ver
-                        </Link>
-                        <Link
-                          href={`/dashboard/produtos/${produto.id}/editar`}
-                          className="btn btn-ghost btn-sm"
-                        >
-                          Editar
-                        </Link>
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+      </div>
     </div>
   )
 }
