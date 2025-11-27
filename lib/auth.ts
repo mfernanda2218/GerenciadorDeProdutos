@@ -5,35 +5,9 @@ import GitHub from 'next-auth/providers/github'
 import Credentials from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
-import { jwtVerify } from 'jose'
 
-const secretKey = new TextEncoder().encode(process.env.NEXTAUTH_SECRET!)
-
-export async function getUserFromToken(token: string) {
-  try {
-    const { payload } = await jwtVerify(token, secretKey)
-
-    // por padrão o NextAuth coloca o id em `sub` (subject)
-    const userId = payload.sub as string | undefined
-    if (!userId) return null
-
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    })
-
-    if (!user) return null
-
-    return {
-      id: user.id,
-      email: user.email,
-      name: user.name ?? null,
-    }
-  } catch {
-    return null
-  }
-}
-
-export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
+export const { handlers, signIn, signOut, auth } = NextAuth({
+  session: { strategy: 'jwt' },
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -43,13 +17,13 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
     }),
+
     Credentials({
-      name: 'Credenciais',
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Senha', type: 'password' },
       },
-      async authorize(credentials) {
+      async authorize(credentials) : Promise<any> {
         if (!credentials?.email || !credentials?.password) return null
 
         const email = String(credentials.email).toLowerCase().trim()
@@ -58,40 +32,48 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
           where: { email },
         })
 
+        // Usuário não encontrado ou não tem senha (ex: cadastrado via Google)
         if (!user || !user.password) return null
 
-        const ok = await bcrypt.compare(String(credentials.password), user.password)
-        if (!ok) return null
+        const isValid = await bcrypt.compare(
+          String(credentials.password),
+          user.password
+        )
+
+        if (!isValid) return null
 
         return {
-          id: user.id,
-          name: user.name ?? null,
+          id: user.id,           // ← já é string (UUID), não precisa .toString()
+          name: user.name,
           email: user.email,
+          image: user.image,
         }
       },
     }),
   ],
 
-  session: { strategy: 'jwt' },
-
-  // lib/auth.ts → substitua os callbacks por estes
   callbacks: {
     async jwt({ token, user }) {
-      // Na primeira vez que loga (user existe), salva o id no token
+      // Quando o usuário faz login, injeta o id no token
       if (user) {
-        token.id = user.id as string
+        token.id = user.id // ← já é string (UUID)
       }
       return token
     },
+
     async session({ session, token }) {
-      // Passa o id do token para a session
-      if (token?.id) {
+      // Passa o id do token pra session (sempre string)
+      if (token.id) {
         session.user.id = token.id as string
       }
       return session
     },
   },
 
-  pages: { signIn: '/login' },
-  secret: process.env.NEXTAUTH_SECRET!,
+  pages: {
+    signIn: '/login',
+  },
+
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === 'development', // ajuda a ver erros no console
 })
