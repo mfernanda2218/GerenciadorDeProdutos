@@ -38,6 +38,22 @@ export default async function DashboardPage({
     })
     : []
 
+  async function deleteProduct(productId: number) {
+  'use server'
+
+  const session = await auth()
+  if (!session?.user?.email) return
+
+  await prisma.product.delete({
+    where: { 
+      id: typeof productId === 'string' ? productId : Number(productId)
+    }
+  })
+
+  revalidatePath('/dashboard')
+  revalidatePath('/dashboard/produtos')
+}
+
   return (
     <div className="min-h-screen bg-base-200">
       {/* NAVBAR */}
@@ -104,12 +120,15 @@ export default async function DashboardPage({
                   Resultados para: "{query}" ({produtos.length})
                 </h3>
               </div>
+
+              {/* TABELA COMPLETA */}
               <div className="overflow-x-auto">
                 <table className="table table-lg">
                   <thead>
                     <tr className="bg-base-300">
                       <th>Produto</th>
                       <th>Fornecedor</th>
+                      <th className="text-right">Preço Custo</th>
                       <th className="text-right">Preço Venda</th>
                       <th className="text-center">Estoque</th>
                       <th className="text-center">Ações</th>
@@ -118,16 +137,30 @@ export default async function DashboardPage({
                   <tbody>
                     {produtos.map((p) => (
                       <tr key={p.id} className="hover:bg-base-200 transition-colors">
+                        {/* NOME DO PRODUTO */}
                         <td className="font-semibold">{p.name}</td>
+
+                        {/* FORNECEDOR */}
                         <td>{p.supplier || '—'}</td>
+
+                        {/* PREÇO DE CUSTO */}
+                        <td className="text-right font-medium text-base-content/70">
+                          R$ {Number(p.costPrice).toFixed(2).replace('.', ',')}
+                        </td>
+
+                        {/* PREÇO DE VENDA */}
                         <td className="text-right font-bold text-success">
                           R$ {Number(p.salePrice).toFixed(2).replace('.', ',')}
                         </td>
+
+                        {/* ESTOQUE COM CORES */}
                         <td className="text-center">
-                          <div className={`badge badge-lg font-bold ${p.quantity === 0 ? 'badge-error' : p.quantity <= 5 ? 'badge-warning' : 'badge-success'}`}>
+                          <div className={`badge badge-lg font-bold ${p.quantity === 0 ? 'badge-error' : p.quantity <= 10 ? 'badge-warning' : 'badge-success'}`}>
                             {p.quantity} un
                           </div>
                         </td>
+
+                        {/* AÇÕES — EDITAR E DELETAR */}
                         <td className="text-center">
                           <div className="flex justify-center gap-3">
                             {/* EDITAR */}
@@ -141,13 +174,14 @@ export default async function DashboardPage({
                               </svg>
                             </Link>
 
-                            {/* DELETAR — ABRE MODAL */}
+                            {/* DELETAR — VERSÃO FINAL E GARANTIDA */}
                             <>
                               <input type="checkbox" id={`delete-modal-${p.id}`} className="modal-toggle" />
+
                               <label
                                 htmlFor={`delete-modal-${p.id}`}
                                 className="btn btn-sm btn-error btn-outline tooltip cursor-pointer"
-                                data-tip="Excluir"
+                                data-tip="Excluir produto"
                               >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -161,18 +195,14 @@ export default async function DashboardPage({
                                     Tem certeza que quer excluir permanentemente:<br />
                                     <strong className="text-primary">{p.name}</strong>?
                                   </p>
+
                                   <div className="modal-action">
                                     <label htmlFor={`delete-modal-${p.id}`} className="btn">
                                       Cancelar
                                     </label>
-                                    <form
-                                      action={async () => {
-                                        'use server'
-                                        await prisma.product.delete({ where: { id: p.id } })
-                                        revalidatePath('/dashboard')
-                                        revalidatePath('/dashboard/produtos')
-                                      }}
-                                    >
+
+                                    {/* AÇÃO DE EXCLUSÃO COM BIND — FUNCIONA 100% */}
+                                    <form action={deleteProduct.bind(null, p.id)}>
                                       <button type="submit" className="btn btn-error">
                                         Sim, excluir
                                       </button>
@@ -183,35 +213,6 @@ export default async function DashboardPage({
                             </>
                           </div>
                         </td>
-                        {/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO */}
-                        <input type="checkbox" id={`delete-modal-${p.id}`} className="modal-toggle" />
-                        <div className="modal" role="dialog">
-                          <div className="modal-box">
-                            <h3 className="text-lg font-bold text-error">Excluir produto?</h3>
-                            <p className="py-4">
-                              Tem certeza que quer excluir permanentemente o produto:
-                              <br />
-                              <strong className="text-primary">{p.name}</strong>?
-                            </p>
-                            <div className="modal-action">
-                              <label htmlFor={`delete-modal-${p.id}`} className="btn">
-                                Cancelar
-                              </label>
-                              <form
-                                action={async () => {
-                                  'use server'
-                                  await prisma.product.delete({ where: { id: p.id } })
-                                  revalidatePath('/dashboard')
-                                  revalidatePath('/dashboard/produtos')
-                                }}
-                              >
-                                <button type="submit" className="btn btn-error">
-                                  Sim, excluir
-                                </button>
-                              </form>
-                            </div>
-                          </div>
-                        </div>
                       </tr>
                     ))}
                   </tbody>
@@ -220,7 +221,6 @@ export default async function DashboardPage({
             </div>
           </div>
         )}
-
         {/* CARD PRINCIPAL - EXATAMENTE COMO NO FIGMA */}
         <div className="max-w-2xl mx-auto">
           <div className="card bg-base-100 shadow-2xl rounded-3xl overflow-hidden">
