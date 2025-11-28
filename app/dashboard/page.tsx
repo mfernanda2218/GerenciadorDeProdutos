@@ -1,30 +1,42 @@
 // app/dashboard/page.tsx
-import Link from 'next/link'
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
+import Link from 'next/link'
 import SearchBar from '@/components/SearchBar'
+import { revalidatePath } from 'next/cache'
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: { q?: string }
+}) {
   const session = await auth()
-  
   if (!session?.user?.id) redirect('/login')
 
-  console.log('session.user.id →', session.user.id)
-  console.log('typeof →', typeof session.user.id)
-
-  const userId = session.user.id
-
-  console.log('userId (UUID) →', userId)
-
-  if (!userId || typeof userId !== 'string') {
-    console.error('USER ID INVÁLIDO →', userId)
-    redirect('/login')
-  }
+  const userId = session.user.id as string
+  const query = searchParams.q?.trim()
 
   const totalProdutos = await prisma.product.count({
-    where: { userId },
+    where: {
+      user: {
+        email: session.user.email!
+      }
+    }
   })
+  const produtos = query
+    ? await prisma.product.findMany({
+      where: {
+        user: { email: session.user.email! },
+        OR: [
+          { name: { contains: query, mode: 'insensitive' } },
+          { supplier: { contains: query, mode: 'insensitive' } },
+        ],
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    })
+    : []
 
   return (
     <div className="min-h-screen bg-base-200">
@@ -64,65 +76,187 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* CONTEÚDO PRINCIPAL */}
-      <div className="container mx-auto p-8 pt-12">
-        {/* BOAS-VINDAS + CONTADOR */}
-        <div className="text-center mb-14">
-          <h2 className="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary mb-4">
-            Bem-vindo de volta, {session.user?.name?.split(' ')[0] || 'Usuário'}!
-          </h2>
-          <p className="text-2xl text-base-content/90 font-medium">
+      <div className="container mx-auto p-8 pt-20 max-w-7xl">
+
+        {/* TÍTULO + CONTADOR */}
+        <div className="text-center mb-12">
+          <h1 className="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-pink-600 mb-6">
+            Bem-vindo de volta, {session.user?.name?.split(' ')[0]}!
+          </h1>
+          <p className="text-xl text-base-content/80">
             Você tem{' '}
-            <span className="text-primary font-bold text-3xl">{totalProdutos}</span>{' '}
+            <span className="font-bold text-primary text-3xl">{totalProdutos}</span>{' '}
             {totalProdutos === 1 ? 'produto cadastrado' : 'produtos cadastrados'}
           </p>
         </div>
 
-        {/* SEARCHBAR */}
-        <div className="max-w-3xl mx-auto mb-16">
+        {/* SEARCHBAR CENTRALIZADA */}
+        <div className="max-w-3xl mx-auto mb-20">
           <SearchBar />
         </div>
 
-        {/* CARD PRINCIPAL */}
-        <div className="max-w-5xl mx-auto">
-          <div className="card bg-base-100 shadow-2xl hover:shadow-3xl transition-all duration-500 border border-primary/30 overflow-hidden">
-            <div className="card-body text-center py-24 px-10 bg-gradient-to-br from-base-100 to-base-200">
-              <div className="mb-12">
-                <div className="w-28 h-28 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
-                  <svg className="w-20 h-20 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        {/* RESULTADOS DA BUSCA (só aparece se tiver query */}
+        {query && produtos.length > 0 && (
+          <div className="mt-32 max-w-6xl mx-auto mb-20">
+            <div className="bg-base-100 rounded-3xl shadow-2xl overflow-hidden">
+              <div className="bg-gradient-to-r from-primary to-pink-600 p-6">
+                <h3 className="text-2xl font-bold text-white">
+                  Resultados para: "{query}" ({produtos.length})
+                </h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="table table-lg">
+                  <thead>
+                    <tr className="bg-base-300">
+                      <th>Produto</th>
+                      <th>Fornecedor</th>
+                      <th className="text-right">Preço Venda</th>
+                      <th className="text-center">Estoque</th>
+                      <th className="text-center">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {produtos.map((p) => (
+                      <tr key={p.id} className="hover:bg-base-200 transition-colors">
+                        <td className="font-semibold">{p.name}</td>
+                        <td>{p.supplier || '—'}</td>
+                        <td className="text-right font-bold text-success">
+                          R$ {Number(p.salePrice).toFixed(2).replace('.', ',')}
+                        </td>
+                        <td className="text-center">
+                          <div className={`badge badge-lg font-bold ${p.quantity === 0 ? 'badge-error' : p.quantity <= 5 ? 'badge-warning' : 'badge-success'}`}>
+                            {p.quantity} un
+                          </div>
+                        </td>
+                        <td className="text-center">
+                          <div className="flex justify-center gap-3">
+                            {/* EDITAR */}
+                            <Link
+                              href={`/dashboard/produtos/editar/${p.id}`}
+                              className="btn btn-sm btn-outline btn-primary tooltip"
+                              data-tip="Editar"
+                            >
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </Link>
+
+                            {/* DELETAR — ABRE MODAL */}
+                            <>
+                              <input type="checkbox" id={`delete-modal-${p.id}`} className="modal-toggle" />
+                              <label
+                                htmlFor={`delete-modal-${p.id}`}
+                                className="btn btn-sm btn-error btn-outline tooltip cursor-pointer"
+                                data-tip="Excluir"
+                              >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </label>
+
+                              <div className="modal" role="dialog">
+                                <div className="modal-box">
+                                  <h3 className="text-lg font-bold text-error">Excluir produto?</h3>
+                                  <p className="py-4">
+                                    Tem certeza que quer excluir permanentemente:<br />
+                                    <strong className="text-primary">{p.name}</strong>?
+                                  </p>
+                                  <div className="modal-action">
+                                    <label htmlFor={`delete-modal-${p.id}`} className="btn">
+                                      Cancelar
+                                    </label>
+                                    <form
+                                      action={async () => {
+                                        'use server'
+                                        await prisma.product.delete({ where: { id: p.id } })
+                                        revalidatePath('/dashboard')
+                                        revalidatePath('/dashboard/produtos')
+                                      }}
+                                    >
+                                      <button type="submit" className="btn btn-error">
+                                        Sim, excluir
+                                      </button>
+                                    </form>
+                                  </div>
+                                </div>
+                              </div>
+                            </>
+                          </div>
+                        </td>
+                        {/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO */}
+                        <input type="checkbox" id={`delete-modal-${p.id}`} className="modal-toggle" />
+                        <div className="modal" role="dialog">
+                          <div className="modal-box">
+                            <h3 className="text-lg font-bold text-error">Excluir produto?</h3>
+                            <p className="py-4">
+                              Tem certeza que quer excluir permanentemente o produto:
+                              <br />
+                              <strong className="text-primary">{p.name}</strong>?
+                            </p>
+                            <div className="modal-action">
+                              <label htmlFor={`delete-modal-${p.id}`} className="btn">
+                                Cancelar
+                              </label>
+                              <form
+                                action={async () => {
+                                  'use server'
+                                  await prisma.product.delete({ where: { id: p.id } })
+                                  revalidatePath('/dashboard')
+                                  revalidatePath('/dashboard/produtos')
+                                }}
+                              >
+                                <button type="submit" className="btn btn-error">
+                                  Sim, excluir
+                                </button>
+                              </form>
+                            </div>
+                          </div>
+                        </div>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* CARD PRINCIPAL - EXATAMENTE COMO NO FIGMA */}
+        <div className="max-w-2xl mx-auto">
+          <div className="card bg-base-100 shadow-2xl rounded-3xl overflow-hidden">
+            <div className="card-body text-center py-16 px-12">
+              {/* ÍCONE CENTRALIZADO */}
+              <div className="flex justify-center mb-8">
+                <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center">
+                  <svg className="w-12 h-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                   </svg>
                 </div>
               </div>
 
-              <h2 className="card-title text-5xl md:text-6xl font-black mb-8 text-primary">Produtos</h2>
-              <p className="text-xl md:text-2xl text-base-content/80 mb-14 max-w-3xl mx-auto leading-relaxed">
-                Gerencie seu estoque com total controle: cadastre novos produtos, edite preços, acompanhe quantidades e remova itens quando necessário.
+              {/* TÍTULO DO CARD */}
+              <h2 className="text-2xl font-bold text-primary mb-6">
+                Produtos
+              </h2>
+
+              {/* DESCRIÇÃO */}
+              <p className="text-base-content/70 leading-relaxed mb-10 max-w-md mx-auto">
+                Gerencie seu estoque com total controle: cadastre novos produtos,
+                edite preços, acompanhe quantidades e remova itens quando necessário.
               </p>
 
-              <div className="card-actions justify-center">
-                <Link
-                  href="/dashboard/produtos"
-                  className="btn btn-primary btn-lg text-xl px-16 py-7 gap-5 hover:scale-105 transition-all shadow-2xl hover:shadow-primary/50"
-                >
-                  <svg className="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                  Acessar Produtos
-                  {totalProdutos > 0 && (
-                    <div className="badge badge-secondary badge-lg text-lg px-4 py-2 ml-4 animate-pulse">
-                      {totalProdutos}
-                    </div>
-                  )}
-                </Link>
-              </div>
+              {/* BOTÃO ROXO */}
+              <Link
+                href="/dashboard/produtos"
+                className="btn btn-primary btn-lg gap-3 px-10 shadow-xl hover:shadow-primary/50 hover:scale-105 transition-all"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Acessar Produtos
+              </Link>
             </div>
           </div>
-        </div>
-
-        {/* RODAPÉ */}
-        <div className="text-center mt-24 text-base-content/40 text-sm">
-          <p>Gerenciador de Produtos • Next.js 14+ • Prisma • Auth.js • DaisyUI</p>
         </div>
       </div>
     </div>
