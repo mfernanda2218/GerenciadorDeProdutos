@@ -10,13 +10,15 @@ type Props = {
   searchParams: { error?: string }
 }
 
-async function atualizarProduto(formData: FormData, productId: number) {
+async function atualizarProduto(formData: FormData) {
   'use server'
 
   const session = await auth()
   if (!session?.user?.email) redirect('/login')
 
+  const productId = Number(formData.get('productId'))
   const name = (formData.get('name') as string)?.trim()
+  
   const supplier = (formData.get('supplier') as string)?.trim() || null
   const salePrice = Number(formData.get('salePrice'))
   const costPrice = Number(formData.get('costPrice'))
@@ -91,7 +93,8 @@ export default async function EditarProdutoPage({ params, searchParams }: Props)
               </div>
             )}
 
-            <form action={(fd) => atualizarProduto(fd, productId)}>
+            <form action={atualizarProduto}>
+              <input type="hidden" name="productId" value={productId} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <input name="name" type="text" defaultValue={produto.name} placeholder="Nome do produto *" className="input input-bordered input-lg" required />
                 <input name="supplier" type="text" defaultValue={produto.supplier || ''} placeholder="Fornecedor" className="input input-bordered input-lg" />
