@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { revalidatePath } from 'next/cache'
+import DeleteButton from '@/components/DeleteButton'
 
 async function criarProduto(formData: FormData) {
   'use server'
@@ -52,6 +53,18 @@ async function criarProduto(formData: FormData) {
   revalidatePath('/dashboard/produtos')
   revalidatePath('/dashboard')
   redirect('/dashboard/produtos?success=1')
+}
+
+// Função de deletar — 100% funcional com ID Int
+async function deleteProduct(productId: number) {
+  'use server'
+
+  await prisma.product.delete({
+    where: { id: productId }
+  })
+
+  revalidatePath('/dashboard')
+  revalidatePath('/dashboard/produtos')
 }
 
 export default async function ProdutosPage({
@@ -176,55 +189,8 @@ export default async function ProdutosPage({
                           </Link>
 
                           {/* DELETAR */}
-                          <>
-                            <input type="checkbox" id={`delete-modal-${p.id}`} className="modal-toggle" />
+                          <DeleteButton productId={p.id} productName={p.name} />
 
-                            <label
-                              htmlFor={`delete-modal-${p.id}`}
-                              className="btn btn-sm btn-error btn-outline tooltip cursor-pointer"
-                              data-tip="Excluir produto"
-                            >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                            </label>
-
-                            {/* MODAL DE CONFIRMAÇÃO */}
-                            <div className="modal" role="dialog">
-                              <div className="modal-box">
-                                <h3 className="text-lg font-bold text-error">Excluir produto?</h3>
-                                <p className="py-4">
-                                  Tem certeza que quer excluir permanentemente:<br />
-                                  <strong className="text-primary">{p.name}</strong>?
-                                </p>
-
-                                <div className="modal-action">
-                                  {/* CANCELAR */}
-                                  <label htmlFor={`delete-modal-${p.id}`} className="btn">Cancelar</label>
-
-                                  {/* CONFIRMAR EXCLUSÃO */}
-                                  <form
-                                    action={async () => {
-                                      'use server'
-                                      // Garante que o ID seja number se for Int, ou string se for String
-                                      const idToDelete = typeof p.id === 'string' ? p.id : Number(p.id)
-
-                                      await prisma.product.delete({
-                                        where: { id: idToDelete }
-                                      })
-
-                                      revalidatePath('/dashboard')
-                                      revalidatePath('/dashboard/produtos')
-                                    }}
-                                  >
-                                    <button type="submit" className="btn btn-error">
-                                      Sim, excluir
-                                    </button>
-                                  </form>
-                                </div>
-                              </div>
-                            </div>
-                          </>
                         </div>
                       </td>
                     </tr>
