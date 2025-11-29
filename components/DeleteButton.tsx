@@ -1,35 +1,37 @@
 // components/DeleteButton.tsx
 'use client'
 
-import Link from 'next/link'
+import { gql, useMutation } from '@apollo/client'
+
+const DELETE_PRODUCT = gql`
+  mutation DeleteProduct($id: ID!) {
+    deleteProduct(id: $id)
+  }
+`
 
 type Props = {
-  productId: number
+  productId: string
   productName: string
+  onDelete?: () => void
 }
 
-export default function DeleteButton({ productId, productName }: Props) {
+export default function DeleteButton({ productId, productName, onDelete }: Props) {
+  const [deleteProduct, { loading }] = useMutation(DELETE_PRODUCT)
+
   const handleDelete = async () => {
-    if (!confirm(`Tem certeza que quer excluir permanentemente:\n"${productName}"?`)) {
-      return
-    }
+    if (!confirm(`Tem certeza que quer excluir permanentemente:\n"${productName}"?`)) return
 
-    const res = await fetch(`/api/delete-product?id=${productId}`, {
-      method: 'DELETE',
-    })
-
-    if (res.ok) {
-      window.location.reload()
-    } else {
-      alert('Erro ao excluir. Tenta de novo.')
+    try {
+      await deleteProduct({ variables: { id: productId } })
+      onDelete?.()
+    } catch (error: any) {
+      alert('Erro ao excluir: ' + error.message)
     }
   }
 
   return (
-    <button onClick={handleDelete} className="btn btn-sm btn-error btn-outline">
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-      </svg>
+    <button onClick={handleDelete} disabled={loading} className="btn btn-sm btn-error btn-outline">
+      {loading ? 'Excluindo...' : 'Excluir'}
     </button>
   )
 }
