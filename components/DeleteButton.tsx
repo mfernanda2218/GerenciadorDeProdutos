@@ -1,13 +1,8 @@
 // components/DeleteButton.tsx
 'use client'
 
-import { gql, useMutation } from '@apollo/client'
-
-const DELETE_PRODUCT = gql`
-  mutation DeleteProduct($id: ID!) {
-    deleteProduct(id: $id)
-  }
-`
+import { useMutation } from '@apollo/client'
+import { DELETE_PRODUCT } from '@/app/graphql/mutations/deleteProduct'
 
 type Props = {
   productId: string
@@ -22,7 +17,9 @@ export default function DeleteButton({ productId, productName, onDelete }: Props
     if (!confirm(`Tem certeza que quer excluir permanentemente:\n"${productName}"?`)) return
 
     try {
-      await deleteProduct({ variables: { id: productId } })
+      await deleteProduct({ 
+        variables: { id: productId } 
+      })
       onDelete?.()
     } catch (error: any) {
       alert('Erro ao excluir: ' + error.message)
@@ -30,7 +27,12 @@ export default function DeleteButton({ productId, productName, onDelete }: Props
   }
 
   return (
-    <button onClick={handleDelete} disabled={loading} className="btn btn-sm btn-error btn-outline">
+    <button 
+      onClick={handleDelete} 
+      disabled={loading}
+      className="btn btn-sm btn-error btn-outline tooltip"
+      data-tip="Excluir produto"
+    >
       {loading ? 'Excluindo...' : 'Excluir'}
     </button>
   )
