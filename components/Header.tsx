@@ -19,7 +19,7 @@ export default function Header() {
   }
 
   if (status === 'unauthenticated') {
-    router.push('/login')
+    setTimeout(() => router.push('/login'), 0)
     return null
   }
 
