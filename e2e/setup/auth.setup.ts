@@ -19,10 +19,10 @@ async function globalSetup() {
   await page.waitForURL('https://github.com/login**');
 
   // Preenche usuário
-  await page.getByLabel('Username or email address').fill('mfernanda2218');
+  await page.getByLabel('Username or email address').fill('SEU-USUARIO');
 
   // Preenche o PAT no campo de senha
-  await page.getByLabel('Password').fill(process.env.GITHUB_PAT || 'MFdmt2207');
+  await page.getByLabel('Password').fill(process.env.GITHUB_PAT || 'SUA-SENHA');
 
   // Clica em Sign in
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();

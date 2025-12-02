@@ -49,4 +49,4 @@ node_modules/
 /playwright/.cache/
 /playwright/.auth/
 
-e2e\storageState.json
+e2e/storageState.json

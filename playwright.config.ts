@@ -20,7 +20,6 @@ const config: PlaywrightTestConfig = {
     video: 'off',
     trace: 'on-first-retry',
 
-    // ← AQUI A MÁGICA: todos os testes usam a sessão salva
     storageState: 'e2e/storageState.json',
   },
 
