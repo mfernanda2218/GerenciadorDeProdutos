@@ -1,6 +1,6 @@
 # Gerenciador de Estoque - Dashboard Completo
 
-Um sistema completo de gerenciamento de estoque com login via GitHub/Google/Email, CRUD de produtos, busca em tempo real, preços de custo e venda, controle de estoque com cores, edição e exclusão — tudo lindo com:
+Um sistema completo de gerenciamento de estoque com login via GitHub/Google/Email, CRUD de produtos, busca em tempo real, preços de custo e venda, controle de estoque com cores, edição e exclusão — tudo com:
 
 [![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -8,14 +8,6 @@ Um sistema completo de gerenciamento de estoque com login via GitHub/Google/Emai
 [![GraphQL](https://img.shields.io/badge/GraphQL-E10098?style=for-the-badge&logo=graphql&logoColor=white)](https://graphql.org/)
 [![NextAuth.js](https://img.shields.io/badge/NextAuth.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://next-auth.js.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-
-
-**CRUD 100% funcional**  
-**Login social + credenciais**  
-**Busca instantânea**  
-**Design moderno e responsivo**  
-**Pronto pra produção ou vender como SaaS**
-
 
 ---
 
