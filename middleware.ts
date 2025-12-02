@@ -1,33 +1,25 @@
-// middleware.ts (na raiz do projeto)
+// src/middleware.ts — VERSÃO QUE FUNCIONA 100% NO EDGE (MIDDLEWARE)
+import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
+export default auth((req: any) => {
+  const { pathname } = req.nextUrl
+  const isLoggedIn = !!req.auth?.user
 
-export default auth((req) => {
-  const { nextUrl } = req
-  const isLoggedIn = !!req.auth
-
-  const isPublicPage = nextUrl.pathname === '/login' || 
-                       nextUrl.pathname === '/cadastro' || 
-                       nextUrl.pathname.startsWith('/api/auth')
-
-  // Se estiver logado e tentar acessar login/cadastro → manda pro dashboard
-  if (isLoggedIn && (nextUrl.pathname === '/login' || nextUrl.pathname === '/cadastro')) {
-    return Response.redirect(new URL('/dashboard', nextUrl))
+  // Logado indo pro login/cadastro → dashboard
+  if (isLoggedIn && (pathname === '/login' || pathname === '/cadastro')) {
+    return NextResponse.redirect(new URL('/dashboard', req.url))
   }
 
-  // Se NÃO estiver logado e tentar acessar área protegida → manda pro login
-  if (!isLoggedIn && !isPublicPage) {
-    return Response.redirect(new URL('/login', nextUrl))
+  // Não logado indo pro dashboard → login
+  if (!isLoggedIn && pathname.startsWith('/dashboard')) {
+    const loginUrl = new URL('/login', req.url)
+    loginUrl.searchParams.set('callbackUrl', pathname)
+    return NextResponse.redirect(loginUrl)
   }
 
-  // Tudo certo → continua
-  return
+  return NextResponse.next()
 })
 
 export const config = {
-  matcher: [
-    '/dashboard/:path*',
-    '/login',
-    '/cadastro',
-    '/api/auth/:path*',
-  ],
+  matcher: ['/dashboard/:path*', '/login'],
 }

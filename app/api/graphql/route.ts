@@ -24,12 +24,7 @@ const handler = startServerAndCreateNextHandler(server, {
   },
 })
 
-// Exporta como route do App Router
 export { handler as GET, handler as POST }
 
-// Opcional: permite CORS (caso use do frontend externo)
-export const config = {
-  api: {
-    bodyParser: false, // Obrigatório pro Apollo funcionar
-  },
-}
+export const dynamic = 'force-dynamic'
+export const bodyParser = false

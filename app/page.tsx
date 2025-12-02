@@ -1,9 +1,9 @@
 // app/page.tsx
-import { auth } from '@/lib/auth'
+import { getCurrentUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 
 export default async function HomePage() {
-  const session = await auth()
+  const session = await getCurrentUser()
 
   // Se já estiver logado → manda direto pro dashboard
   if (session?.user) {

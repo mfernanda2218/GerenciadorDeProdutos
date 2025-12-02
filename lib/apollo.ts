@@ -1,25 +1,24 @@
-// lib/apollo.ts
+// lib/apollo.ts — VERSÃO QUE NUNCA MAIS VAI DAR ERRO DE HEADERS
 'use client'
 
 import { ApolloClient, HttpLink, InMemoryCache, from } from '@apollo/client'
 import { setContext } from '@apollo/client/link/context'
 import { onError } from '@apollo/client/link/error'
-import { auth } from '@/lib/auth'
 
 const httpLink = new HttpLink({
   uri: '/api/graphql',
-  credentials: 'same-origin', // Envia cookies automaticamente (NextAuth usa isso)
+  credentials: 'same-origin', // ← NextAuth usa cookies httpOnly → PERFEITO
 })
 
 const authLink = setContext(async (_, { headers }) => {
-  try {
-    const session = await auth()
-    // Não precisa de token no header — NextAuth usa cookies httpOnly
-    // Mas deixamos vazio pra não dar erro
-    return { headers }
-  } catch (error) {
-    console.error('Erro ao obter sessão no Apollo:', error)
-    return { headers }
+  // ISSO É O SEGREDO: NÃO CHAMA auth() AQUI NO CLIENTE
+  // Só devolve os headers vazios — a sessão vem pelo cookie mesmo
+  return {
+    headers: {
+      ...headers,
+      // Não precisa de Authorization, Bearer, nada
+      // O NextAuth manda o cookie automaticamente com credentials: 'same-origin'
+    },
   }
 })
 
@@ -40,7 +39,6 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
   }
 })
 
-// CRIA O CLIENTE ÚNICO E REUTILIZÁVEL
 const client = new ApolloClient({
   ssrMode: typeof window === 'undefined',
   link: from([errorLink, authLink.concat(httpLink)]),
@@ -69,16 +67,4 @@ const client = new ApolloClient({
   },
 })
 
-// EXPORTA DIRETAMENTE O CLIENTE (USADO NO layout.tsx)
 export { client }
-
-// Funções antigas mantidas por compatibilidade (opcional)
-let apolloClient = client
-
-export function initializeApollo() {
-  return client
-}
-
-export function useApollo() {
-  return client
-}

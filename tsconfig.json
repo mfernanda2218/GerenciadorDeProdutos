@@ -37,7 +37,7 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts",
     "jest.setup.js"
-  ],
+, "auth.ts.old"  ],
   "exclude": [
     "node_modules"
   ]
