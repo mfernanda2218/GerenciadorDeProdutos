@@ -1,0 +1,165 @@
+{
+  "cookies": [
+    {
+      "name": "authjs.csrf-token",
+      "value": "e9eae7a2740f16e29279d0a9b64893b0e544db0211194b1e8ce642c4aa795577%7C1ad1f6dbfdbcc52c1f37fcf56b78e8f8d8b0efd5ebca697abaa34f7aa28865ed",
+      "domain": "localhost",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "authjs.callback-url",
+      "value": "http%3A%2F%2Flocalhost%3A3000%2Fdashboard",
+      "domain": "localhost",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_octo",
+      "value": "GH1.1.162026313.1764694108",
+      "domain": ".github.com",
+      "path": "/",
+      "expires": 1796230105.88025,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "cpu_bucket",
+      "value": "xlg",
+      "domain": ".github.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "preferred_color_mode",
+      "value": "light",
+      "domain": ".github.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "tz",
+      "value": "America%2FSao_Paulo",
+      "domain": ".github.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_device_id",
+      "value": "8689e990d53e70f75efacd57d8259b8a",
+      "domain": "github.com",
+      "path": "/",
+      "expires": 1796230107.005384,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "saved_user_sessions",
+      "value": "194267541%3ARL6xDOCtsdFbCfCUtBrBezq3VGHiYBjUYG78RQRdyW8AocWq",
+      "domain": "github.com",
+      "path": "/",
+      "expires": 1772470107.688332,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "user_session",
+      "value": "RL6xDOCtsdFbCfCUtBrBezq3VGHiYBjUYG78RQRdyW8AocWq",
+      "domain": "github.com",
+      "path": "/",
+      "expires": 1765903707.688541,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__Host-user_session_same_site",
+      "value": "RL6xDOCtsdFbCfCUtBrBezq3VGHiYBjUYG78RQRdyW8AocWq",
+      "domain": "github.com",
+      "path": "/",
+      "expires": 1765903707.6886,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Strict"
+    },
+    {
+      "name": "tz",
+      "value": "America%2FSao_Paulo",
+      "domain": "github.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "color_mode",
+      "value": "%7B%22color_mode%22%3A%22auto%22%2C%22light_theme%22%3A%7B%22name%22%3A%22light%22%2C%22color_mode%22%3A%22light%22%7D%2C%22dark_theme%22%3A%7B%22name%22%3A%22dark%22%2C%22color_mode%22%3A%22dark%22%7D%7D",
+      "domain": ".github.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "logged_in",
+      "value": "yes",
+      "domain": ".github.com",
+      "path": "/",
+      "expires": 1796230107.689408,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "dotcom_user",
+      "value": "mfernanda2218",
+      "domain": ".github.com",
+      "path": "/",
+      "expires": 1796230107.689504,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_gh_sess",
+      "value": "ntRsF6c3MIxYLUH%2BFoMTbB21r8JGvwLtwVRF0Xv74RzLmy%2BUPC%2BUPDCyMor8fJBq4rCRqWKNOSLbiD%2FXKSiqxc0mj6cE8JWqIK8up1Llj6x6ZkE4RMVxt%2FMFeFg9gry4Kbm7Hd7u4dJxVNgCUc3rLpQbvxLpvqGroY6grsnl%2FgALdEpQNbIqPCLOBSs32pE%2BTTaIYg%2FlbYLPDVYt0zr7NxnBklTNNdlvz0FMgRcdb0kvuna6GRFcaF4SxGv7L5I0BVpi5t5O3fR%2FN4V%2BxQI7rZoRM0jGOuAo91gibSIZ0xe01xerwSp8VeTOYargSI14j3Qhj3UW7H8JIKYrJwoq9EqkC1JE%2B9sjt6mid0dj71wIMSfgUwuKYa3%2FgZwHP7Zs9WpzdyBdHyixIYaRfQM3VagpVr76ivUKU6Q6TISD%2FCGiYbrNA6FSZ7wcctOSsTc%2BJYtb9YGkOrEJw69f5pCrp0qBMQRo1BX3lSopkhFt%2BQ2TICnt9xOun98NJwe9SeTuc3%2B6ymHAvyOIxSU0lKq7debaFTshPC8X--n3i3fnSfRPP%2Bq%2FT4--Uc5KkUuQF0laGTWpH%2FM6ZA%3D%3D",
+      "domain": "github.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "authjs.session-token",
+      "value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwia2lkIjoiWWN4QUUtQko2SFFZWEJwd1dBRmJuWUg5cnNGdkYyN3JTVURCV0NkWndqWWd4TGR3eWNZVkE2QjdhRzhvWjdmYjBCaW15cEl4WWVDbXV0WHhRc2s4WHcifQ..AaFiA415fm4KROmI48VmDQ.WzxigmnPOQbjYTPmaPzIHUQt0HskrgRn-7LzeoT0WCsu0dRzNtssxEMI4pOA4Wn1p2YiSQK1BhFNhBauOkmyH_9T-8CWZi8KrjACH31DJvE-gRl73hyRgtNnGS0xzJUtus4kz7-EPliPd7bAoyRBopBBXpXR0-YKo4jKR9EJw_TmIuC-ibVd34xkC1dfKXyTOwb9oDbFGHTG8s7vtMiFis5Qm07Dwh07pZppTaNxIoAKPersDLW_QypD6F0nQdffQGDnRtWdrTor4tPnM8NAdSg9hQECRC9Y5Wo3oVM_VRI2pahHnsvqJVQfQv1qyW3rw98SiYePaxj389l73676UBdO7Ba_fhsZm2jtW_suAxinPjxBWmFuyeDYCsdIG80zHawDFK7M_0yzFxeXOVHD_A.kZ27Xo_u72i4D7a2W7_tE09DYZZTi4G1wdhSKjpyWbs",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1767286109.782571,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": []
+}
