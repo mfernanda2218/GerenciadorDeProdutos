@@ -1,6 +1,14 @@
 # Gerenciador de Estoque - Dashboard Completo
 
-Um sistema completo de gerenciamento de estoque com login via GitHub/Google/Email, CRUD de produtos, busca em tempo real, preços de custo e venda, controle de estoque com cores, edição e exclusão — tudo lindo com **Next.js 14 (App Router)**, **Prisma**, **PostgreSQL**, **NextAuth.js** e **DaisyUI/Tailwind**.
+Um sistema completo de gerenciamento de estoque com login via GitHub/Google/Email, CRUD de produtos, busca em tempo real, preços de custo e venda, controle de estoque com cores, edição e exclusão — tudo lindo com:
+
+[![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
+[![GraphQL](https://img.shields.io/badge/GraphQL-E10098?style=for-the-badge&logo=graphql&logoColor=white)](https://graphql.org/)
+[![NextAuth.js](https://img.shields.io/badge/NextAuth.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://next-auth.js.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+
 
 **CRUD 100% funcional**  
 **Login social + credenciais**  
@@ -24,12 +32,12 @@ Um sistema completo de gerenciamento de estoque com login via GitHub/Google/Emai
 
 ### Tecnologias Usadas
 
-- Next.js 14 (App Router + Server Components)
-- TypeScript
-- Prisma + PostgreSQL
-- NextAuth.js v4
-- Tailwind CSS + DaisyUI
-- Lucide Icons
+- **Frontend**: Next.js 14 (App Router + Server Components)
+- **Backend**: API GraphQL com Apollo Server
+- **Banco de Dados**: PostgreSQL com Prisma ORM
+- **Autenticação**: NextAuth.js com múltiplos provedores
+- **Estilização**: Tailwind CSS + DaisyUI
+- **Testes**: Playwright para E2E
 
 ---
 
@@ -52,7 +60,7 @@ cp .env.example .env.local
 
 # 4. Preencha as variáveis no .env.local
 DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/gerenciador?schema=public"
-NEXTAUTH_SECRET="uma-string-aleatoria-muito-forte-aqui"
+NEXTAUTH_SECRET="uma-string-aleatoria-muito-forte-aqui" (gerado com o comando 'npx auth secret')
 NEXTAUTH_URL="http://localhost:3000"
 
 # GitHub OAuth (opcional, mas recomendado)
