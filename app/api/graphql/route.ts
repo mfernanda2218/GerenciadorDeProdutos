@@ -1,4 +1,4 @@
-// app/api/graphql/route.ts  ← MUDE O NOME DO ARQUIVO PARA route.ts
+// app/api/graphql/route.ts
 import { ApolloServer } from '@apollo/server'
 import { startServerAndCreateNextHandler } from '@as-integrations/next'
 import { typeDefs } from '@/app/server/graphql/typeDefs'
