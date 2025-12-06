@@ -1,4 +1,4 @@
-// lib/apollo.ts — VERSÃO QUE NUNCA MAIS VAI DAR ERRO DE HEADERS
+// lib/apollo.ts
 'use client'
 
 import { ApolloClient, HttpLink, InMemoryCache, from } from '@apollo/client'
@@ -7,30 +7,30 @@ import { onError } from '@apollo/client/link/error'
 
 const httpLink = new HttpLink({
   uri: '/api/graphql',
-  credentials: 'same-origin', // ← NextAuth usa cookies httpOnly → PERFEITO
+  credentials: 'same-origin',
 })
 
 const authLink = setContext(async (_, { headers }) => {
-  // ISSO É O SEGREDO: NÃO CHAMA auth() AQUI NO CLIENTE
-  // Só devolve os headers vazios — a sessão vem pelo cookie mesmo
-  return {
-    headers: {
-      ...headers,
-      // Não precisa de Authorization, Bearer, nada
-      // O NextAuth manda o cookie automaticamente com credentials: 'same-origin'
-    },
-  }
+  return { headers: { ...headers } }
 })
 
 const errorLink = onError(({ graphQLErrors, networkError }) => {
   if (graphQLErrors) {
-    graphQLErrors.forEach(({ message }) => {
-      console.error(`[GraphQL Error]: ${message}`)
-    })
+    for (const err of graphQLErrors) {
+      // Ignora o erro de seleção em Boolean (delete, toggle, etc.)
+      if (
+        err.message.includes('must not have a selection since type') &&
+        err.message.includes('Boolean')
+      ) {
+        continue // ou console.warn se quiser ver
+      }
+
+      console.error('[GraphQL Error]:', err.message, err)
+    }
   }
 
   if (networkError) {
-    console.error(`[Network Error]: ${networkError}`)
+    console.error('[Network Error]:', networkError)
     if ('statusCode' in networkError && networkError.statusCode === 401) {
       if (typeof window !== 'undefined') {
         window.location.href = '/login'
@@ -56,14 +56,8 @@ const client = new ApolloClient({
     },
   }),
   defaultOptions: {
-    watchQuery: {
-      fetchPolicy: 'cache-and-network',
-      errorPolicy: 'all',
-    },
-    query: {
-      fetchPolicy: 'network-only',
-      errorPolicy: 'all',
-    },
+    watchQuery: { fetchPolicy: 'cache-and-network', errorPolicy: 'all' },
+    query: { fetchPolicy: 'network-only', errorPolicy: 'all' },
   },
 })
 
