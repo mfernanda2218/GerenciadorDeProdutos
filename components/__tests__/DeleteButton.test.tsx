@@ -1,62 +1,84 @@
 // components/__tests__/DeleteButton.test.tsx
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { MockedProvider } from '@apollo/client/testing'
-import DeleteButton from '../DeleteButton'
-import { DELETE_PRODUCT } from '@/app/graphql/mutations/deleteProduct'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { MockedProvider } from '@apollo/client/testing';
+import { InMemoryCache } from '@apollo/client';
+import DeleteButton from '../DeleteButton';
+import { DELETE_PRODUCT } from '@/app/graphql/mutations/deleteProduct';
 
+// MOCKS
 const mocks = [
   {
     request: {
       query: DELETE_PRODUCT,
       variables: { id: '123' },
     },
-    result: { data: { deleteProduct: true } },
+    result: {
+      data: {
+        deleteProduct: true,
+        __typename: 'Mutation',
+      },
+    },
   },
-]
+];
+
+// Create a custom cache without the addTypename option
+const createApolloCache = () => {
+  return new InMemoryCache();
+};
 
 describe('DeleteButton', () => {
-  it('exibe confirmação e chama mutation ao confirmar', async () => {
-    const onDelete = jest.fn()
-    const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(true)
+  beforeEach(() => {
+    jest.spyOn(window, 'confirm').mockReturnValue(true);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('exibe confirmação e chama onDelete ao confirmar', async () => {
+    const onDelete = jest.fn();
 
     render(
-      <MockedProvider mocks={mocks} addTypename={false}>
+      <MockedProvider 
+        mocks={mocks} 
+        cache={createApolloCache()} // Use the custom cache
+      >
         <DeleteButton productId="123" productName="Camiseta Azul" onDelete={onDelete} />
       </MockedProvider>
-    )
+    );
 
-    fireEvent.click(screen.getByText('Excluir'))
+    fireEvent.click(screen.getByText('Excluir'));
 
     await waitFor(() => {
-      expect(confirmSpy).toHaveBeenCalledWith(
+      expect(window.confirm).toHaveBeenCalledWith(
         expect.stringContaining('Camiseta Azul')
-      )
-    })
+      );
+    });
 
     await waitFor(() => {
-      expect(onDelete).toHaveBeenCalledTimes(1)
-    })
+      expect(onDelete).toHaveBeenCalledTimes(1);
+    });
+  });
 
-    confirmSpy.mockRestore()
-  })
-
-  it('não chama mutation se cancelar', async () => {
-    const onDelete = jest.fn()
-    const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(false)
+  it('não chama onDelete se cancelar', async () => {
+    const onDelete = jest.fn();
+    jest.spyOn(window, 'confirm').mockReturnValue(false);
 
     render(
-      <MockedProvider mocks={mocks} addTypename={false}>
+      <MockedProvider 
+        mocks={mocks} 
+        cache={createApolloCache()} // Use the custom cache
+      >
         <DeleteButton productId="123" productName="Camiseta" onDelete={onDelete} />
       </MockedProvider>
-    )
+    );
 
-    fireEvent.click(screen.getByText('Excluir'))
+    fireEvent.click(screen.getByText('Excluir'));
 
     await waitFor(() => {
-      expect(confirmSpy).toHaveBeenCalled()
-    })
+      expect(window.confirm).toHaveBeenCalled();
+    });
 
-    expect(onDelete).not.toHaveBeenCalled()
-    confirmSpy.mockRestore()
-  })
-})
+    expect(onDelete).not.toHaveBeenCalled();
+  });
+});
