@@ -23,6 +23,9 @@ jest.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }))
 
-global.HTMLFormElement.prototype.requestSubmit = function () {
-  this.submit()
+// Only mock HTMLFormElement in jsdom environment (not in node environment)
+if (typeof global.HTMLFormElement !== 'undefined') {
+  global.HTMLFormElement.prototype.requestSubmit = function () {
+    this.submit()
+  }
 }
