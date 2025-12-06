@@ -21,7 +21,7 @@ export const productResolvers = {
     product: async (_: any, { id }: { id: string }, { prisma, user }: any) => {
       if (!user) throw new Error('Não autenticado')
       return await prisma.product.findFirst({
-        where: { id, user: { email: user.email } },
+        where: { id: Number(id), user: { email: user.email } },
       })
     },
   },
@@ -37,14 +37,14 @@ export const productResolvers = {
     updateProduct: async (_: any, { id, input }: any, { prisma, user }: any) => {
       if (!user) throw new Error('Não autenticado')
       return await prisma.product.update({
-        where: { id },
+        where: { id: Number(id) },
         data: input,
       })
     },
 
     deleteProduct: async (_: any, { id }: { id: string }, { prisma, user }: any) => {
       if (!user) throw new Error('Não autenticado')
-      await prisma.product.delete({ where: { id } })
+      await prisma.product.delete({ where: { id: Number(id) } })
       return true
     },
   },

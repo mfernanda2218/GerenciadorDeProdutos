@@ -76,8 +76,8 @@ describe('Product Resolvers', () => {
     expect(prismaMock.product.create).toHaveBeenCalledWith({
       data: {
         name: input.name,
-        salePrice: '149.9',  // ← STRING, não Decimal nem number
-        costPrice: '80',     // ← STRING, não 80
+        salePrice: '149.9',
+        costPrice: '80',
         quantity: input.quantity,
         supplier: input.supplier,
         user: { connect: { email: mockUser.email } },
@@ -114,10 +114,10 @@ describe('Product Resolvers', () => {
     )
 
     expect(prismaMock.product.update).toHaveBeenCalledWith({
-      where: { id: '1' }, // ← SEU RESOLVER NÃO CONVERTE ID PARA NÚMERO
+      where: { id: 1 },
       data: {
         name: input.name,
-        salePrice: '99.9', // ← STRING
+        salePrice: '99.9',
       },
     })
 
@@ -129,7 +129,7 @@ describe('Product Resolvers', () => {
       id: 1,
       userId: mockUser.id,
     } as any)
-    // Mock da operação de delete
+
     prismaMock.product.delete.mockResolvedValue({ id: 1 } as any)
 
     const result = await productResolvers.Mutation.deleteProduct(
@@ -139,7 +139,7 @@ describe('Product Resolvers', () => {
     )
 
     expect(prismaMock.product.delete).toHaveBeenCalledWith({
-      where: { id: '1' }, // ← ID COMO STRING
+      where: { id: 1 },
     })
 
     expect(result).toBe(true)
