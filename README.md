@@ -1,4 +1,4 @@
-# Gerenciador de Estoque - Dashboard Completo
+# Gerenciador de Estoque
 
 Um sistema completo de gerenciamento de estoque com login via GitHub/Google/Email, CRUD de produtos, busca em tempo real, preços de custo e venda, controle de estoque com cores, edição e exclusão — tudo com:
 
