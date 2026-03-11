@@ -50,3 +50,5 @@ node_modules/
 /playwright/.auth/
 
 e2e/storageState.json
+
+notas.md
