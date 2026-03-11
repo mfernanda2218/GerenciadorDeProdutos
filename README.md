@@ -36,7 +36,7 @@ Um sistema completo de gerenciamento de estoque com login via GitHub/Google/Emai
 ### Como rodar o projeto (5 minutos)
 
 ```bash
-# 1. Clone o repositório
+# 1. Clone o repositório e acesse a pasta
 git clone https://github.com/seu-usuario/GerenciadorDeProdutos.git
 cd GerenciadorDeProdutos
 
@@ -47,30 +47,16 @@ yarn
 # ou
 pnpm install
 
-# 3. Copie o .env.example para .env.local
+# 3. Copie o .env.example para .env.local e susbstitua com suas credenciais
 cp .env.example .env.local
-
-# 4. Preencha as variáveis no .env.local
-DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/gerenciador?schema=public"
-NEXTAUTH_SECRET="uma-string-aleatoria-muito-forte-aqui" (gerado com o comando 'npx auth secret')
-NEXTAUTH_URL="http://localhost:3000"
-
-# GitHub OAuth (opcional, mas recomendado)
-GITHUB_ID=seu_github_client_id
-GITHUB_SECRET=seu_github_client_secret
-
-# Google OAuth (opcional)
-GOOGLE_CLIENT_ID=seu_google_client_id
-GOOGLE_CLIENT_SECRET=seu_google_client_secret
-```
 
 ### Banco de Dados e seed
 
 ```bash
-# 5. Rode as migrações
+# 4. Rode as migrações
 npx prisma migrate dev --name init
 
-# 6. (Opcional) Crie o primeiro usuário + produtos de teste)
+# 5. (Opcional) Crie o primeiro usuário + produtos de teste)
 npx tsx prisma/seed.ts
 
 # OU rode separadamente:
@@ -80,7 +66,7 @@ npx tsx prisma/seed-produtos.ts   # cadastra 15 produtos reais pra teste
 
 ### Iniciando o Projeto
 ```bash
-# 7. Inicie o projeto
+# 6. Inicie o projeto
 npm run dev
 # ou
 yarn dev
@@ -89,10 +75,3 @@ pnpm dev
 ```
 
 Agora abra o navegador e acesse http://localhost:3000
-
----
-
-### Login
-
-- Email: admin@teste.com
-- Senha: 123456

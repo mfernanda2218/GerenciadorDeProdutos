@@ -5,7 +5,10 @@ import { useQuery, gql } from '@apollo/client'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import DeleteButton from '@/components/DeleteButton'
+import { useState } from 'react'
+import EditModal from '@/components/EditModal'
+import DeleteModal from '@/components/DeleteModal'
+import { atualizarProduto } from './editar/[id]/actions'
 
 const GET_ALL_PRODUCTS = gql`
   query GetAllProducts {
@@ -24,6 +27,9 @@ const GET_ALL_PRODUCTS = gql`
 export default function ProdutosPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState<any>(null)
 
   const { data, loading, error, refetch } = useQuery(GET_ALL_PRODUCTS, {
     fetchPolicy: 'cache-and-network',
@@ -44,7 +50,17 @@ export default function ProdutosPage() {
 
   const products = data?.products || []
 
-  return (
+  const handleEdit = (product: any) => {
+    setSelectedProduct(product)
+    setEditModalOpen(true)
+  }
+
+  const handleDelete = (product: any) => {
+    setSelectedProduct(product)
+    setDeleteModalOpen(true)
+  }
+
+  const content = (
     <div className="min-h-screen bg-base-200 py-10">
       <div className="container mx-auto px-6 max-w-7xl">
 
@@ -117,21 +133,25 @@ export default function ProdutosPage() {
                       </td>
                       <td className="text-center">
                         <div className="flex justify-center gap-3">
-                          <Link
-                            href={`/dashboard/produtos/editar/${p.id}`}
+                          <button
+                            onClick={() => handleEdit(p)}
                             className="btn btn-sm btn-outline btn-primary tooltip"
                             data-tip="Editar"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
-                          </Link>
+                          </button>
 
-                          <DeleteButton
-                            productId={p.id}
-                            productName={p.name}
-                            onDelete={() => refetch()}
-                          />
+                          <button
+                            onClick={() => handleDelete(p)}
+                            className="btn btn-sm btn-error btn-outline tooltip"
+                            data-tip="Excluir produto"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -164,5 +184,38 @@ export default function ProdutosPage() {
 
       </div>
     </div>
+  )
+
+  // Modals fora do return principal para não afetar o layout
+  return (
+    <>
+      {content}
+      
+      {selectedProduct && (
+        <>
+          <EditModal
+            produto={{
+              id: selectedProduct.id,
+              name: selectedProduct.name,
+              supplier: selectedProduct.supplier,
+              salePrice: selectedProduct.salePrice,
+              costPrice: selectedProduct.costPrice,
+              quantity: selectedProduct.quantity,
+            }}
+            isOpen={editModalOpen}
+            onClose={() => setEditModalOpen(false)}
+            onUpdate={atualizarProduto}
+          />
+
+          <DeleteModal
+            productId={selectedProduct.id.toString()}
+            productName={selectedProduct.name}
+            isOpen={deleteModalOpen}
+            onClose={() => setDeleteModalOpen(false)}
+            onDelete={() => refetch()}
+          />
+        </>
+      )}
+    </>
   )
 }
