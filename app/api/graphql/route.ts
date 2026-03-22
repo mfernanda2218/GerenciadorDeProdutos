@@ -16,15 +16,19 @@ const server = new ApolloServer({
   },
 })
 
-// Isso é a mágica: transforma seu Apollo Server em uma API Route do Next.js
-const handler = startServerAndCreateNextHandler(server, {
+const handler = startServerAndCreateNextHandler<NextRequest>(server, {
   context: async (req: NextRequest) => {
     const context = await createContext({ req })
     return context
   },
 })
 
-export { handler as GET, handler as POST }
+export async function GET(request: NextRequest) {
+  return handler(request)
+}
+
+export async function POST(request: NextRequest) {
+  return handler(request)
+}
 
 export const dynamic = 'force-dynamic'
-export const bodyParser = false
