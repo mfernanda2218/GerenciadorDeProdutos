@@ -114,6 +114,16 @@ export default function LoginPage() {
               Entrar com Email/Senha
             </button>
           </form>
+
+          <div className="text-center">
+            <span className="text-sm">Ainda não tem uma conta? </span>
+            <button 
+              onClick={() => router.push('/signup')}
+              className="btn btn-link btn-sm p-0 h-auto min-h-0 text-primary"
+            >
+              Criar conta
+            </button>
+          </div>
         </div>
       </div>
     </div>
