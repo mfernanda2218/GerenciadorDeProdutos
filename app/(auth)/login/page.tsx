@@ -3,9 +3,9 @@
 
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const error = searchParams.get('error')
@@ -127,5 +127,17 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-base-200">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   )
 }
