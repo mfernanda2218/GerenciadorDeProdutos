@@ -3,6 +3,7 @@
 
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { Suspense, useEffect } from 'react'
 
 function LoginContent() {
@@ -117,12 +118,12 @@ function LoginContent() {
 
           <div className="text-center">
             <span className="text-sm">Ainda não tem uma conta? </span>
-            <button 
-              onClick={() => router.push('/signup')}
+            <Link 
+              href="/signup"
               className="btn btn-link btn-sm p-0 h-auto min-h-0 text-primary"
             >
               Criar conta
-            </button>
+            </Link>
           </div>
         </div>
       </div>

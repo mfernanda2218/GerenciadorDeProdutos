@@ -18,8 +18,8 @@ export default function Header() {
     )
   }
 
+  // Não redireciona aqui — deixa as páginas individuais controlarem
   if (status === 'unauthenticated') {
-    setTimeout(() => router.push('/login'), 0)
     return null
   }
 
