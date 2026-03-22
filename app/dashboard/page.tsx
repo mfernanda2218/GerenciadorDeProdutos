@@ -1,6 +1,8 @@
 // app/dashboard/page.tsx
 'use client'
 
+import { Suspense } from 'react'
+
 import { useQuery, gql } from '@apollo/client'
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -25,7 +27,7 @@ const GET_PRODUCTS_AND_COUNT = gql`
   }
 `
 
-export default function DashboardPage() {
+function DashboardContent() {
   // Hook do Next.js para ler query string (funciona perfeitamente em Client Components)
   const searchParams = useSearchParams()
   const query = searchParams.get('q')?.trim() || ''
@@ -215,5 +217,17 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-base-200 flex items-center justify-center">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
   )
 }
