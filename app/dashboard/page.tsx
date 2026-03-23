@@ -64,120 +64,113 @@ function DashboardContent() {
   const filteredProducts = query ? products : []
 
   return (
-    <div className="min-h-screen bg-base-200">
-      <div className="container mx-auto p-8 pt-20 max-w-7xl">
+    <div className="w-full">
+      {/* TÍTULO + CONTADOR */}
+      <div className="text-center mb-8 md:mb-16">
+        <h1 className="text-4xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-pink-600 mb-6">
+          Olá, {user?.name?.split(' ')[0]}!
+        </h1>
+        <p className="text-lg text-base-content/80">
+          Você tem{' '}
+          <span className="font-bold text-primary text-3xl">{totalProdutos}</span>{' '}
+          {totalProdutos === 1 ? 'produto cadastrado' : 'produtos cadastrados'}
+        </p>
+      </div>
 
-        {/* TÍTULO + CONTADOR */}
-        <div className="text-center mb-12">
-          <h1 className="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-pink-600 mb-6">
-            Bem-vindo de volta, {user?.name?.split(' ')[0]}!
-          </h1>
-          <p className="text-xl text-base-content/80">
-            Você tem{' '}
-            <span className="font-bold text-primary text-3xl">{totalProdutos}</span>{' '}
-            {totalProdutos === 1 ? 'produto cadastrado' : 'produtos cadastrados'}
-          </p>
-        </div>
+      {/* SEARCHBAR CENTRALIZADA */}
+      <div className="max-w-3xl mx-auto mb-16 px-4">
+        <SearchBar />
+      </div>
 
-        {/* SEARCHBAR CENTRALIZADA */}
-        <div className="max-w-3xl mx-auto mb-20">
-          <SearchBar />
-        </div>
-
-        {/* RESULTADOS DA BUSCA */}
-        {query && (
-          <div className="mt-32 max-w-6xl mx-auto mb-20">
-            {loading ? (
-              <div className="text-center py-20">
-                <span className="loading loading-spinner loading-lg text-primary"></span>
+      {/* RESULTADOS DA BUSCA */}
+      {query && (
+        <div className="mt-20 max-w-6xl mx-auto mb-20 px-0 sm:px-4">
+          {loading ? (
+            <div className="text-center py-20">
+              <span className="loading loading-spinner loading-lg text-primary"></span>
+            </div>
+          ) : error ? (
+            <div className="alert alert-error shadow-lg max-w-2xl mx-auto">
+              <span>Erro ao carregar produtos: {error.message}</span>
+            </div>
+          ) : (
+            <div className="bg-base-100 rounded-2xl shadow-2xl overflow-hidden border border-base-300">
+              <div className="bg-gradient-to-r from-primary to-pink-600 p-6 flex justify-between items-center">
+                <h3 className="text-xl md:text-2xl font-bold text-white">
+                  Resultados: "{query}" ({filteredProducts.length})
+                </h3>
               </div>
-            ) : error ? (
-              <div className="alert alert-error shadow-lg max-w-2xl mx-auto">
-                <span>Erro ao carregar produtos: {error.message}</span>
-              </div>
-            ) : (
-              <div className="bg-base-100 rounded-3xl shadow-2xl overflow-hidden">
-                <div className="bg-gradient-to-r from-primary to-pink-600 p-6">
-                  <h3 className="text-2xl font-bold text-white">
-                    Resultados para: "{query}" ({filteredProducts.length})
-                  </h3>
+
+              {filteredProducts.length === 0 ? (
+                <div className="p-20 text-center">
+                  <p className="text-xl text-base-content/60">Nenhum produto encontrado</p>
                 </div>
-
-                {filteredProducts.length === 0 ? (
-                  <div className="p-20 text-center">
-                    <p className="text-2xl text-base-content/60">Nenhum produto encontrado</p>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="table table-lg">
-                      <thead>
-                        <tr className="bg-base-300">
-                          <th>Produto</th>
-                          <th>Fornecedor</th>
-                          <th className="text-right">Preço Custo</th>
-                          <th className="text-right">Preço Venda</th>
-                          <th className="text-center">Estoque</th>
-                          <th className="text-center">Ações</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredProducts.map((p: any) => (
-                          <tr key={p.id} className="hover:bg-base-200 transition-colors">
-                            <td className="font-semibold">{p.name}</td>
-                            <td>{p.supplier || '—'}</td>
-                            <td className="text-right font-medium text-base-content/70">
-                              R$ {Number(p.costPrice).toFixed(2).replace('.', ',')}
-                            </td>
-                            <td className="text-right font-bold text-success">
-                              R$ {Number(p.salePrice).toFixed(2).replace('.', ',')}
-                            </td>
-                            <td className="text-center">
-                              <div
-                                className={`badge badge-lg font-bold ${
-                                  p.quantity === 0
-                                    ? 'badge-error'
-                                    : p.quantity <= 10
-                                    ? 'badge-warning'
-                                    : 'badge-success'
-                                }`}
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="table table-compact sm:table-lg w-full">
+                    <thead>
+                      <tr className="bg-base-200">
+                        <th className="font-bold">Produto</th>
+                        <th className="font-bold hidden lg:table-cell">Fornecedor</th>
+                        <th className="font-bold text-right hidden md:table-cell">Custo</th>
+                        <th className="font-bold text-right">Preço Venda</th>
+                        <th className="font-bold text-center">Estoque</th>
+                        <th className="font-bold text-center">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredProducts.map((p: any) => (
+                        <tr key={p.id} className="hover:bg-base-100 transition-colors border-b border-base-200 last:border-0">
+                          <td className="font-bold text-base-content">{p.name}</td>
+                          <td className="hidden lg:table-cell">{p.supplier || '—'}</td>
+                          <td className="text-right font-medium text-base-content/60 hidden md:table-cell whitespace-nowrap">
+                            R$ {Number(p.costPrice).toFixed(2).replace('.', ',')}
+                          </td>
+                          <td className="text-right font-black text-success whitespace-nowrap">
+                            R$ {Number(p.salePrice).toFixed(2).replace('.', ',')}
+                          </td>
+                          <td className="text-center">
+                            <div
+                              className={`badge badge-md font-bold ${
+                                p.quantity === 0
+                                  ? 'badge-error'
+                                  : p.quantity <= 10
+                                  ? 'badge-warning'
+                                  : 'badge-success'
+                              }`}
+                            >
+                              {p.quantity} un
+                            </div>
+                          </td>
+                          <td className="text-center">
+                            <div className="flex justify-center gap-2">
+                              <Link
+                                href={`/dashboard/produtos?edit=${p.id}`}
+                                className="btn btn-xs sm:btn-sm btn-outline btn-primary"
+                                aria-label="Editar"
                               >
-                                {p.quantity} un
-                              </div>
-                            </td>
-                            <td className="text-center">
-                              <div className="flex justify-center gap-3">
-                                <Link
-                                  href={`/dashboard/produtos?edit=${p.id}`}
-                                  className="btn btn-sm btn-outline btn-primary tooltip"
-                                  data-tip="Editar"
-                                >
-                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                                    />
-                                  </svg>
-                                </Link>
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                              </Link>
 
-                                <DeleteButton
-                                  productId={p.id}
-                                  productName={p.name}
-                                  onDelete={() => refetch()}
-                                />
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
+                              <DeleteButton
+                                productId={p.id}
+                                productName={p.name}
+                                onDelete={() => refetch()}
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
         {/* CARD PRINCIPAL */}
         <div className="max-w-2xl mx-auto">
@@ -215,7 +208,6 @@ function DashboardContent() {
             </div>
           </div>
         </div>
-      </div>
     </div>
   )
 }

@@ -46,8 +46,8 @@ function LoginContent() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-base-200">
-      <div className="card w-96 bg-base-100 shadow-2xl">
+    <div className="flex min-h-screen items-center justify-center bg-base-200 p-4">
+      <div className="card w-full max-w-[420px] bg-base-100 shadow-2xl">
         <div className="card-body">
           <h2 className="card-title justify-center text-3xl mb-8">Login</h2>
 

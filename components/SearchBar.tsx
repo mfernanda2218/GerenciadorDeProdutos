@@ -38,8 +38,8 @@ export default function SearchBar() {
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Buscar produtos por nome, código ou fornecedor..."
-        className="input input-bordered input-lg w-full pl-6 pr-16 rounded-full shadow-xl focus:outline-none focus:ring-4 focus:ring-primary/30 focus:border-primary transition-all text-lg bg-base-100"
+        placeholder="Buscar produtos ou fornecedores..."
+        className="input input-bordered input-md md:input-lg w-full pl-4 md:pl-8 pr-16 md:pr-20 rounded-full shadow-xl focus:outline-none focus:ring-4 focus:ring-primary/30 focus:border-primary transition-all text-base md:text-lg bg-base-100"
         autoComplete="off"
       />
 
