@@ -28,11 +28,13 @@ const getBaseUrl = () => {
   return 'http://localhost:3000'
 }
 
-const httpLink = new HttpLink({
-  uri: `${getBaseUrl()}/api/graphql`,
-})
-
 export function getApolloServerClient(cookie?: string) {
+  const baseUrl = getBaseUrl()
+  
+  const httpLink = new HttpLink({
+    uri: `${baseUrl}/api/graphql`,
+  })
+
   const authLink = setContext((_, { headers }) => {
     return {
       headers: {
@@ -45,6 +47,8 @@ export function getApolloServerClient(cookie?: string) {
   return new ApolloClient({
     ssrMode: true,
     link: authLink.concat(httpLink),
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({
+        addTypename: false
+    }),
   })
 }

@@ -1,16 +1,16 @@
-// app/dashboard/produtos/editar/[id]/actions.ts
 'use server'
 
-import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
-import { getApolloServerClient } from '@/lib/apollo-server'
-import { UPDATE_PRODUCT } from '@/app/graphql/mutations/updateProduct'
+import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 
 export async function atualizarProduto(prevState: any, formData: FormData) {
-  const cookieStore = await cookies()
-  const cookieHeader = cookieStore.toString()
+  const session = await auth()
+  const user = session?.user
 
-  const client = getApolloServerClient(cookieHeader)
+  if (!user || !user.email) {
+    return { error: 'Sessão expirada. Faça login novamente.' }
+  }
 
   try {
     const id = Number(formData.get('id'))
@@ -38,24 +38,26 @@ export async function atualizarProduto(prevState: any, formData: FormData) {
     if (isNaN(costPrice) || costPrice < 0) return { error: 'custo' }
     if (isNaN(quantity) || quantity < 0) return { error: 'quantidade' }
 
-    // === MUTAÇÃO GRAPHQL ===
-    const response = await client.mutate({
-      mutation: UPDATE_PRODUCT,
-      variables: {
-        id: id.toString(),
-        input: {
-          name,
-          supplier,
-          salePrice: Number(salePrice.toFixed(2)),
-          costPrice: Number(costPrice.toFixed(2)),
-          quantity: Math.floor(quantity),
-        },
-      },
+    // === ATUALIZAÇÃO DIRETA NO BANCO (SEM GRAPHQL) ===
+    // Verifica se o produto pertence ao usuário logado
+    const existingProduct = await prisma.product.findFirst({
+        where: { id, user: { email: user.email } }
     })
 
-    if (response.errors && response.errors.length > 0) {
-        return { error: response.errors[0].message }
+    if (!existingProduct) {
+        return { error: 'Produto não encontrado ou sem permissão para editar.' }
     }
+
+    await prisma.product.update({
+      where: { id },
+      data: {
+        name,
+        supplier,
+        salePrice: Number(salePrice.toFixed(2)),
+        costPrice: Number(costPrice.toFixed(2)),
+        quantity: Math.floor(quantity),
+      },
+    })
 
     // Revalidate paths to clear caches
     revalidatePath('/dashboard')
@@ -63,15 +65,9 @@ export async function atualizarProduto(prevState: any, formData: FormData) {
 
     return { success: true }
   } catch (err: any) {
-    console.error('ERRO DETALHADO AO ATUALIZAR PRODUTO NO SERVER ACTION:', err)
-    
-    // Tratamento de erros comuns
-    const message = err.message || ''
-    if (message.includes('Não autenticado')) return { error: 'Sessão expirada. Faça login novamente.' }
-    if (message.includes('NOT_FOUND') || message.includes('encontrado')) return { error: 'Produto não encontrado.' }
-    
+    console.error('ERRO AO ATUALIZAR PRODUTO (PRISMA):', err)
     return { 
-      error: err.message || 'Erro interno ao salvar produto. Verifique sua conexão.' 
+      error: 'Erro interno ao salvar produto. Verifique sua conexão.' 
     }
   }
 }
