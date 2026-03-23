@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useState } from 'react'
 import EditModal from '@/components/EditModal'
-import DeleteModal from '@/components/DeleteModal'
+import DeleteButton from '@/components/DeleteButton'
 import { atualizarProduto } from './editar/[id]/actions'
 
 const GET_ALL_PRODUCTS = gql`
@@ -28,7 +28,6 @@ export default function ProdutosPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [editModalOpen, setEditModalOpen] = useState(false)
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
 
   const { data, loading, error, refetch } = useQuery(GET_ALL_PRODUCTS, {
@@ -53,11 +52,6 @@ export default function ProdutosPage() {
   const handleEdit = (product: any) => {
     setSelectedProduct(product)
     setEditModalOpen(true)
-  }
-
-  const handleDelete = (product: any) => {
-    setSelectedProduct(product)
-    setDeleteModalOpen(true)
   }
 
   const content = (
@@ -143,15 +137,11 @@ export default function ProdutosPage() {
                             </svg>
                           </button>
 
-                          <button
-                            onClick={() => handleDelete(p)}
-                            className="btn btn-sm btn-error btn-outline tooltip"
-                            data-tip="Excluir produto"
-                          >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
+                          <DeleteButton
+                            productId={p.id}
+                            productName={p.name}
+                            onDelete={() => refetch()}
+                          />
                         </div>
                       </td>
                     </tr>
@@ -205,14 +195,6 @@ export default function ProdutosPage() {
             isOpen={editModalOpen}
             onClose={() => setEditModalOpen(false)}
             onUpdate={atualizarProduto}
-          />
-
-          <DeleteModal
-            productId={selectedProduct.id.toString()}
-            productName={selectedProduct.name}
-            isOpen={deleteModalOpen}
-            onClose={() => setDeleteModalOpen(false)}
-            onDelete={() => refetch()}
           />
         </>
       )}
