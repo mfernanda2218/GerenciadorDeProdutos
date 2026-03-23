@@ -1,77 +1,79 @@
-# Gerenciador de Estoque
+# 📦 Gerenciador de Estoque
 
-Um sistema completo de gerenciamento de estoque com login via GitHub/Google/Email, CRUD de produtos, busca em tempo real, preços de custo e venda, controle de estoque com cores, edição e exclusão — tudo com:
+Um sistema de alta performance para gerenciamento de inventário, desenvolvido com as tecnologias mais modernas do ecossistema JavaScript. Oferece controle total sobre produtos, fornecedores e níveis de estoque com uma interface premium e 100% responsiva.
 
-[![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js_16-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![GraphQL](https://img.shields.io/badge/GraphQL-E10098?style=for-the-badge&logo=graphql&logoColor=white)](https://graphql.org/)
-[![NextAuth.js](https://img.shields.io/badge/NextAuth.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://next-auth.js.org/)
+[![NextAuth.js](https://img.shields.io/badge/Auth_v5-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://next-auth.js.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 
 ---
 
-### Funcionalidades
+### 🔥 Principais Funcionalidades
 
-- Login com GitHub, Google ou Email/Senha
-- Cadastro, edição e exclusão de produtos
-- Controle de estoque com badges coloridos (verde, amarelo, vermelho)
-- Busca em tempo real por nome ou fornecedor
-- Interface limpa, moderna e totalmente responsiva
-- Proteção total de rotas (você não acessa nada sem estar logado)
-
----
-
-### Tecnologias Usadas
-
-- **Frontend**: Next.js 14 (App Router + Server Components)
-- **Backend**: API GraphQL com Apollo Server
-- **Banco de Dados**: PostgreSQL com Prisma ORM
-- **Autenticação**: NextAuth.js com múltiplos provedores
-- **Estilização**: Tailwind CSS + DaisyUI
-- **Testes**: Playwright para E2E
+- **🔐 Autenticação Multi-Provedor**: Login via GitHub, Google ou Email/Senha utilizando o novo NextAuth v5.
+- **📱 Layout 100% Responsivo**: Interface adaptável para celulares, tablets e desktops com Navbar dinâmica.
+- **📊 Dashboard Inteligente**: Busca em tempo real e indicadores visuais de estoque (baixo, em falta, normal).
+- **🛠️ CRUD Completo**: Gerenciamento ágil de produtos com suporte a preços de custo, venda e fornecedores.
+- **🔒 Segurança Robusta**: Proteção de rotas via Middleware e validação de propriedade de dados no servidor.
+- **⚡ Performance Máxima**: Utilização de Server Actions e Prisma para operações de banco de dados ultrarrápidas.
 
 ---
 
-### Como rodar o projeto (5 minutos)
+### 🚀 Tecnologias e Arquitetura
+
+- **Core**: Next.js 16 (App Router) + React 18
+- **API**: GraphQL (Apollo Server) para consultas complexas + Server Actions para mutações atômicas
+- **Database**: PostgreSQL hospedado no Vercel/Neon com Prisma ORM
+- **Auth**: NextAuth.js v5 (Beta) com Prisma Adapter
+- **UI/UX**: Tailwind CSS + DaisyUI para componentes modernos e acessíveis
+- **Validation**: Validação rigorosa de tipos com TypeScript e lógica de negócio isolada no servidor
+
+---
+
+### 🛠️ Como rodar o projeto localmente
 
 ```bash
-# 1. Clone o repositório e acesse a pasta
-git clone https://github.com/seu-usuario/GerenciadorDeProdutos.git
+# 1. Clone o repositório
+git clone https://github.com/mfernanda2218/GerenciadorDeProdutos.git
 cd GerenciadorDeProdutos
 
 # 2. Instale as dependências
 npm install
-# ou
-yarn
-# ou
-pnpm install
 
-# 3. Copie o .env.example para .env.local e susbstitua com suas credenciais
-cp .env.example .env.local
+# 3. Configure as variáveis de ambiente
+cp .env.example .env
+# Preencha seu .env com as URLs do Banco de Dados e segredos do Auth
+```
 
-### Banco de Dados e seed
-
+#### Configuração do Banco de Dados:
 ```bash
-# 4. Rode as migrações
+# 4. Gere o cliente Prisma e rode as migrações
+npx prisma generate
 npx prisma migrate dev --name init
 
-# 5. (Opcional) Crie o primeiro usuário + produtos de teste)
-npx tsx prisma/seed.ts
-
-# OU rode separadamente:
-npx tsx prisma/seed.ts    # cria um usuário admin@teste.com
-npx tsx prisma/seed-produtos.ts   # cadastra 15 produtos reais pra teste
+# 5. (Opcional) Popule o banco com dados de teste
+npx tsx prisma/seed-produtos.ts   # Cadastra 15 produtos reais para teste
 ```
 
-### Iniciando o Projeto
+#### Iniciando o servidor:
 ```bash
-# 6. Inicie o projeto
+# 6. Rode em modo de desenvolvimento
 npm run dev
-# ou
-yarn dev
-# ou
-pnpm dev
+```
+Acesse [http://localhost:3000](http://localhost:3000) e faça login com os dados configurados.
+
+---
+
+### 🧪 Testes e Qualidade
+
+O projeto utiliza **Playwright** para testes End-to-End (E2E) e **Jest** para testes unitários, garantindo a integridade do fluxo de gerenciamento:
+```bash
+npm run test          # Testes Unitários/Integração
+npx playwright test   # Testes E2E (Simulação do Usuário)
 ```
 
-Agora abra o navegador e acesse http://localhost:3000
+---
+*Desenvolvido com foco em escalabilidade e experiência do usuário.*
