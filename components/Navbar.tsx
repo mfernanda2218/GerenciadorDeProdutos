@@ -28,7 +28,7 @@ export default function Navbar() {
           )}
         </div>
         
-        <Link href="/dashboard" className="btn btn-ghost text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-pink-600 hidden sm:flex">
+        <Link href="/dashboard" className="btn btn-ghost text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-pink-600 px-2">
           Gerenciador
         </Link>
       </div>

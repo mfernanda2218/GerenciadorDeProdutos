@@ -121,7 +121,7 @@ function DashboardContent() {
                     <tbody>
                       {filteredProducts.map((p: any) => (
                         <tr key={p.id} className="hover:bg-base-100 transition-colors border-b border-base-200 last:border-0">
-                          <td className="font-bold text-base-content">{p.name}</td>
+                          <td className="font-bold text-base-content min-w-[120px]">{p.name}</td>
                           <td className="hidden lg:table-cell">{p.supplier || '—'}</td>
                           <td className="text-right font-medium text-base-content/60 hidden md:table-cell whitespace-nowrap">
                             R$ {Number(p.costPrice).toFixed(2).replace('.', ',')}
@@ -130,15 +130,13 @@ function DashboardContent() {
                             R$ {Number(p.salePrice).toFixed(2).replace('.', ',')}
                           </td>
                           <td className="text-center">
-                            <div
-                              className={`badge badge-md font-bold ${
-                                p.quantity === 0
-                                  ? 'badge-error'
-                                  : p.quantity <= 10
-                                  ? 'badge-warning'
-                                  : 'badge-success'
-                              }`}
-                            >
+                            <div className={`inline-flex items-center justify-center px-4 py-1.5 rounded-full font-bold text-xs md:text-sm whitespace-nowrap min-w-[70px] ${
+                              p.quantity === 0 
+                                ? 'bg-error/20 text-error border border-error/30' 
+                                : p.quantity <= 10 
+                                ? 'bg-warning/20 text-warning border border-warning/30' 
+                                : 'bg-success/20 text-success border border-success/30'
+                            }`}>
                               {p.quantity} un
                             </div>
                           </td>
