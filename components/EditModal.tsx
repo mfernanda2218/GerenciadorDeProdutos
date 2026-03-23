@@ -29,16 +29,18 @@ type EditModalProps = {
   isOpen: boolean
   onClose: () => void
   onUpdate: (prevState: any, formData: FormData) => Promise<{ error?: string; success?: boolean }>
+  onRefetch?: () => void
 }
 
-export default function EditModal({ produto, isOpen, onClose, onUpdate }: EditModalProps) {
+export default function EditModal({ produto, isOpen, onClose, onUpdate, onRefetch }: EditModalProps) {
   const [state, formAction] = useFormState(onUpdate, {})
 
   useEffect(() => {
     if (state?.success) {
+      onRefetch?.()
       onClose()
     }
-  }, [state?.success, onClose])
+  }, [state?.success, onClose, onRefetch])
 
   if (!isOpen) return null
 

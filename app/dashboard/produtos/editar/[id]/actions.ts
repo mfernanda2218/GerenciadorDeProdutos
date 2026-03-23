@@ -2,16 +2,13 @@
 'use server'
 
 import { cookies } from 'next/headers'
+import { revalidatePath } from 'next/cache'
 import { getApolloServerClient } from '@/lib/apollo-server'
 import { UPDATE_PRODUCT } from '@/app/graphql/mutations/updateProduct'
 
 export async function atualizarProduto(prevState: any, formData: FormData) {
-  // === CORREÇÃO PRINCIPAL: forma correta de pegar todos os cookies como string ===
   const cookieStore = await cookies()
-  const cookieHeader = cookieStore
-    .getAll()
-    .map((cookie) => `${cookie.name}=${cookie.value}`)
-    .join('; ')
+  const cookieHeader = cookieStore.toString()
 
   const client = getApolloServerClient(cookieHeader)
 
@@ -22,20 +19,18 @@ export async function atualizarProduto(prevState: any, formData: FormData) {
     }
 
     // Valores brutos do formulário
-    const rawName = (formData.get('name') as string) ?? ''
-    const rawSupplier = (formData.get('supplier') as string) ?? ''
+    const name = (formData.get('name') as string)?.trim() ?? ''
+    const supplier = (formData.get('supplier') as string)?.trim() || null
     const rawSalePrice = (formData.get('salePrice') as string) ?? '0'
     const rawCostPrice = (formData.get('costPrice') as string) ?? '0'
     const rawQuantity = (formData.get('quantity') as string) ?? '0'
 
-    // Limpeza e normalização
-    const name = rawName.trim()
-    const supplier = rawSupplier.trim() || null
-
-    // Aceita vírgula e ponto como separ mentally decimal
+    // Limpeza de preços: aceita vírgula e ponto como separador decimal
     const salePrice = parseFloat(rawSalePrice.replace(',', '.'))
     const costPrice = parseFloat(rawCostPrice.replace(',', '.'))
-    const quantity = parseInt(rawQuantity.replace(/\D/g, '') || '0', 10) || 0
+    
+    // Quantidade: garante que seja um inteiro positivo
+    const quantity = parseInt(rawQuantity.replace(/[^\d-]/g, ''), 10) || 0
 
     // === VALIDAÇÕES ===
     if (!name || name.length < 2) return { error: 'nome' }
@@ -58,10 +53,15 @@ export async function atualizarProduto(prevState: any, formData: FormData) {
       },
     })
 
-    // Sucesso!
+    // Revalidate paths to clear caches
+    revalidatePath('/dashboard')
+    revalidatePath('/dashboard/produtos')
+
     return { success: true }
   } catch (err: any) {
-    console.error('Erro ao atualizar produto:', err)
-    return { error: 'Erro ao salvar produto. Tente novamente.' }
+    console.error('ERRO DETALHADO AO ATUALIZAR PRODUTO:', err)
+    return { 
+      error: err.message || 'Erro interno ao salvar produto. Tente novamente.' 
+    }
   }
-}
+}

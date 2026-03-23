@@ -183,19 +183,23 @@ export default function ProdutosPage() {
       
       {selectedProduct && (
         <>
-          <EditModal
-            produto={{
-              id: selectedProduct.id,
-              name: selectedProduct.name,
-              supplier: selectedProduct.supplier,
-              salePrice: selectedProduct.salePrice,
-              costPrice: selectedProduct.costPrice,
-              quantity: selectedProduct.quantity,
-            }}
-            isOpen={editModalOpen}
-            onClose={() => setEditModalOpen(false)}
-            onUpdate={atualizarProduto}
-          />
+          {editModalOpen && (
+            <EditModal
+              key={selectedProduct.id}
+              produto={{
+                id: selectedProduct.id,
+                name: selectedProduct.name,
+                supplier: selectedProduct.supplier,
+                salePrice: selectedProduct.salePrice,
+                costPrice: selectedProduct.costPrice,
+                quantity: selectedProduct.quantity,
+              }}
+              isOpen={editModalOpen}
+              onClose={() => setEditModalOpen(false)}
+              onUpdate={atualizarProduto}
+              onRefetch={() => refetch()}
+            />
+          )}
         </>
       )}
     </>
