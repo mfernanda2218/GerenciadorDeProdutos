@@ -1,7 +1,7 @@
 // app/(auth)/login/page.tsx
 'use client'
 
-import { signIn } from 'next-auth/react'
+import { signIn, useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Suspense, useEffect } from 'react'
@@ -11,20 +11,14 @@ function LoginContent() {
   const searchParams = useSearchParams()
   const error = searchParams.get('error')
 
-  // Verifica sessão diretamente via API (funciona 100% com Auth.js v5 + JWT)
+  const { status } = useSession()
+
+  // Redireciona se já estiver logado
   useEffect(() => {
-    fetch('/api/auth/session', { cache: 'no-store' })
-      .then(res => res.json())
-      .then(session => {
-        if (session?.user) {
-          console.log('Sessão encontrada → redirecionando para /dashboard')
-          router.replace('/dashboard')
-        }
-      })
-      .catch(() => {
-        // Se falhar, assume que não tem sessão (normal)
-      })
-  }, [router])
+    if (status === 'authenticated') {
+      router.replace('/dashboard')
+    }
+  }, [status, router])
 
   const handleOAuth = (provider: 'google' | 'github') => {
     signIn(provider, {

@@ -3,26 +3,21 @@
 
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { useSession } from 'next-auth/react'
 
 export default function SignupPage() {
   const router = useRouter()
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
-  // Verifica se usuário já está logado
+  const { status } = useSession()
+
+  // Redireciona se já estiver logado
   useEffect(() => {
-    fetch('/api/auth/session', { cache: 'no-store' })
-      .then(res => res.json())
-      .then(session => {
-        if (session?.user) {
-          console.log('Sessão encontrada → redirecionando para /dashboard')
-          router.replace('/dashboard')
-        }
-      })
-      .catch(() => {
-        // Se falhar, assume que não tem sessão (normal)
-      })
-  }, [router])
+    if (status === 'authenticated') {
+      router.replace('/dashboard')
+    }
+  }, [status, router])
 
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
