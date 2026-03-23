@@ -1,5 +1,15 @@
 // jest.setup.js
 import '@testing-library/jest-dom'
+import { fetch, Request, Response, Headers } from 'cross-fetch'
+import { TextEncoder, TextDecoder } from 'util'
+
+// Polifylls para ambiente Node (importante para testes de API/NextAuth)
+if (!global.fetch) global.fetch = fetch
+if (!global.Request) global.Request = Request
+if (!global.Response) global.Response = Response
+if (!global.Headers) global.Headers = Headers
+if (!global.TextEncoder) global.TextEncoder = TextEncoder
+if (!global.TextDecoder) global.TextDecoder = TextDecoder
 
 // Mock do next-auth/react
 jest.mock('next-auth/react', () => ({
