@@ -36,14 +36,36 @@ export const productResolvers = {
 
     updateProduct: async (_: any, { id, input }: any, { prisma, user }: any) => {
       if (!user) throw new Error('Não autenticado')
+
+      // Verifica se o produto pertence ao usuário antes de atualizar
+      const product = await prisma.product.findFirst({
+        where: { id: Number(id), user: { email: user.email } }
+      })
+
+      if (!product) throw new Error('Produto não encontrado ou sem permissão para editar')
+
       return await prisma.product.update({
         where: { id: Number(id) },
-        data: input,
+        data: {
+            ...input,
+            // Garante que salePrice e costPrice sejam números (floats) para o Prisma
+            // ou converte para string se o Prisma exigir Decimal robusto
+            ...(input.salePrice !== undefined && { salePrice: input.salePrice }),
+            ...(input.costPrice !== undefined && { costPrice: input.costPrice }),
+        },
       })
     },
 
     deleteProduct: async (_: any, { id }: { id: string }, { prisma, user }: any) => {
       if (!user) throw new Error('Não autenticado')
+
+      // Verifica se o produto pertence ao usuário antes de deletar
+      const product = await prisma.product.findFirst({
+        where: { id: Number(id), user: { email: user.email } }
+      })
+
+      if (!product) throw new Error('Produto não encontrado ou sem permissão para excluir')
+
       await prisma.product.delete({ where: { id: Number(id) } })
       return true
     },

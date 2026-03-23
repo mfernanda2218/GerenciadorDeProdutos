@@ -147,7 +147,7 @@ function DashboardContent() {
                             <td className="text-center">
                               <div className="flex justify-center gap-3">
                                 <Link
-                                  href={`/dashboard/produtos/editar/${p.id}`}
+                                  href={`/dashboard/produtos?edit=${p.id}`}
                                   className="btn btn-sm btn-outline btn-primary tooltip"
                                   data-tip="Editar"
                                 >

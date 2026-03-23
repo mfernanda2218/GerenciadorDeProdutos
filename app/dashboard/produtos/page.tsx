@@ -3,9 +3,9 @@
 
 import { useQuery, gql } from '@apollo/client'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import EditModal from '@/components/EditModal'
 import DeleteButton from '@/components/DeleteButton'
 import { atualizarProduto } from './editar/[id]/actions'
@@ -27,12 +27,26 @@ const GET_ALL_PRODUCTS = gql`
 export default function ProdutosPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const editId = searchParams.get('edit')
+
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
 
   const { data, loading, error, refetch } = useQuery(GET_ALL_PRODUCTS, {
     fetchPolicy: 'cache-and-network',
   })
+
+  // Efeito para abrir o modal via query param
+  useEffect(() => {
+    if (editId && data?.products) {
+      const productToEdit = data.products.find((p: any) => p.id === editId)
+      if (productToEdit) {
+        setSelectedProduct(productToEdit)
+        setEditModalOpen(true)
+      }
+    }
+  }, [editId, data?.products])
 
   if (status === 'loading') {
     return (
@@ -48,6 +62,12 @@ export default function ProdutosPage() {
   }
 
   const products = data?.products || []
+
+  const handleClose = () => {
+    setEditModalOpen(false)
+    setSelectedProduct(null)
+    router.replace('/dashboard/produtos')
+  }
 
   const handleEdit = (product: any) => {
     setSelectedProduct(product)
@@ -195,7 +215,7 @@ export default function ProdutosPage() {
                 quantity: selectedProduct.quantity,
               }}
               isOpen={editModalOpen}
-              onClose={() => setEditModalOpen(false)}
+              onClose={handleClose}
               onUpdate={atualizarProduto}
               onRefetch={() => refetch()}
             />

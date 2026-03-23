@@ -39,19 +39,23 @@ export async function atualizarProduto(prevState: any, formData: FormData) {
     if (isNaN(quantity) || quantity < 0) return { error: 'quantidade' }
 
     // === MUTAÇÃO GRAPHQL ===
-    await client.mutate({
+    const response = await client.mutate({
       mutation: UPDATE_PRODUCT,
       variables: {
         id: id.toString(),
         input: {
           name,
           supplier,
-          salePrice,
-          costPrice,
-          quantity,
+          salePrice: Number(salePrice.toFixed(2)),
+          costPrice: Number(costPrice.toFixed(2)),
+          quantity: Math.floor(quantity),
         },
       },
     })
+
+    if (response.errors && response.errors.length > 0) {
+        return { error: response.errors[0].message }
+    }
 
     // Revalidate paths to clear caches
     revalidatePath('/dashboard')
@@ -59,9 +63,15 @@ export async function atualizarProduto(prevState: any, formData: FormData) {
 
     return { success: true }
   } catch (err: any) {
-    console.error('ERRO DETALHADO AO ATUALIZAR PRODUTO:', err)
+    console.error('ERRO DETALHADO AO ATUALIZAR PRODUTO NO SERVER ACTION:', err)
+    
+    // Tratamento de erros comuns
+    const message = err.message || ''
+    if (message.includes('Não autenticado')) return { error: 'Sessão expirada. Faça login novamente.' }
+    if (message.includes('NOT_FOUND') || message.includes('encontrado')) return { error: 'Produto não encontrado.' }
+    
     return { 
-      error: err.message || 'Erro interno ao salvar produto. Tente novamente.' 
+      error: err.message || 'Erro interno ao salvar produto. Verifique sua conexão.' 
     }
   }
 }
