@@ -1,4 +1,5 @@
 // jest.setup.js
+console.log('--- JEST SETUP STARTING ---');
 import '@testing-library/jest-dom'
 import { fetch, Request, Response, Headers } from 'cross-fetch'
 import { TextEncoder, TextDecoder } from 'util'
@@ -10,6 +11,7 @@ if (!global.Response) global.Response = Response
 if (!global.Headers) global.Headers = Headers
 if (!global.TextEncoder) global.TextEncoder = TextEncoder
 if (!global.TextDecoder) global.TextDecoder = TextDecoder
+console.log('--- JEST SETUP FINISHED (Polyfills) ---');
 
 // Mock do next-auth/react
 jest.mock('next-auth/react', () => ({
