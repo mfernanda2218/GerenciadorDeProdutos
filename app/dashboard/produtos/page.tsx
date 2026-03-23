@@ -24,7 +24,7 @@ const GET_ALL_PRODUCTS = gql`
   }
 `
 
-export default function ProdutosPage() {
+function ProdutosList() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -196,7 +196,6 @@ export default function ProdutosPage() {
     </div>
   )
 
-  // Modals fora do return principal para não afetar o layout
   return (
     <>
       {content}
@@ -223,5 +222,19 @@ export default function ProdutosPage() {
         </>
       )}
     </>
+  )
+}
+
+import { Suspense } from 'react'
+
+export default function ProdutosPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-base-200 flex items-center justify-center">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    }>
+      <ProdutosList />
+    </Suspense>
   )
 }
