@@ -26,7 +26,7 @@ export default function CadastrarProdutoPage() {
 
   const [createProduct, { loading, error }] = useMutation(CREATE_PRODUCT, {
     onCompleted: () => {
-      router.push('/dashboard/produtos')
+      router.push('/dashboard')
       router.refresh()
     }
   })
@@ -60,7 +60,7 @@ export default function CadastrarProdutoPage() {
     <div className="w-full max-w-3xl mx-auto">
       {/* HEADER / BREADCRUMB */}
       <div className="flex items-center gap-4 mb-8">
-        <Link href="/dashboard/produtos" className="btn btn-circle btn-ghost">
+        <Link href="/dashboard" className="btn btn-circle btn-ghost">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
@@ -169,7 +169,7 @@ export default function CadastrarProdutoPage() {
 
             {/* Actions */}
             <div className="card-actions justify-end mt-8 pt-4 border-t border-base-200 gap-3">
-              <Link href="/dashboard/produtos" className="btn btn-ghost flex-1 md:flex-none">
+              <Link href="/dashboard" className="btn btn-ghost flex-1 md:flex-none">
                 Cancelar
               </Link>
               <button 

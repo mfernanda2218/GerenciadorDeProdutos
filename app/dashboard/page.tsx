@@ -1,14 +1,15 @@
 // app/dashboard/page.tsx
 'use client'
 
-import { Suspense } from 'react'
-
+import { Suspense, useState, useEffect } from 'react'
 import { useQuery, gql } from '@apollo/client'
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import SearchBar from '@/components/SearchBar'
 import DeleteButton from '@/components/DeleteButton'
+import EditModal from '@/components/EditModal'
+import { atualizarProduto } from './produtos/editar/[id]/actions'
 
 const GET_PRODUCTS_AND_COUNT = gql`
   query GetProductsAndCount($search: String) {
@@ -28,21 +29,32 @@ const GET_PRODUCTS_AND_COUNT = gql`
 `
 
 function DashboardContent() {
-  // Hook do Next.js para ler query string (funciona perfeitamente em Client Components)
   const searchParams = useSearchParams()
   const query = searchParams.get('q')?.trim() || ''
+  const editId = searchParams.get('edit')
 
-  // Auth
   const { data: session, status } = useSession()
   const router = useRouter()
 
-  // Apollo Query
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState<any>(null)
+
   const { data, loading, error, refetch } = useQuery(GET_PRODUCTS_AND_COUNT, {
     variables: { search: query || undefined },
     fetchPolicy: 'cache-and-network',
   })
 
-  // Loading da sessão
+  // Efeito para abrir o modal via query param
+  useEffect(() => {
+    if (editId && data?.products) {
+      const productToEdit = data.products.find((p: any) => p.id === editId)
+      if (productToEdit) {
+        setSelectedProduct(productToEdit)
+        setEditModalOpen(true)
+      }
+    }
+  }, [editId, data?.products])
+
   if (status === 'loading') {
     return (
       <div className="min-h-screen bg-base-200 flex items-center justify-center">
@@ -51,161 +63,173 @@ function DashboardContent() {
     )
   }
 
-  // Redireciona se não estiver autenticado
   if (status === 'unauthenticated') {
     router.push('/login')
     return null
   }
 
-  // Dados
   const user = session?.user
   const products = data?.products || []
-  const totalProdutos = data?.totalProducts?.length || 0
-  const filteredProducts = query ? products : []
+  const totalProdutosAvailable = data?.totalProducts?.length || 0
+
+  const handleClose = () => {
+    setEditModalOpen(false)
+    setSelectedProduct(null)
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete('edit')
+    router.replace(`/dashboard?${params.toString()}`)
+  }
+
+  const handleEdit = (product: any) => {
+    setSelectedProduct(product)
+    setEditModalOpen(true)
+  }
 
   return (
     <div className="w-full">
-      {/* TÍTULO + CONTADOR */}
-      <div className="text-center mb-8 md:mb-16">
-        <h1 className="text-4xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-pink-600 mb-6">
-          Olá, {user?.name?.split(' ')[0]}!
-        </h1>
-        <p className="text-lg text-base-content/80">
-          Você tem{' '}
-          <span className="font-bold text-primary text-3xl">{totalProdutos}</span>{' '}
-          {totalProdutos === 1 ? 'produto cadastrado' : 'produtos cadastrados'}
-        </p>
+      {/* HEADER: Welcome message and Total count */}
+      <div className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div>
+          <h1 className="text-3xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-pink-600">
+            Olá, {user?.name?.split(' ')[0]}!
+          </h1>
+          <p className="text-lg text-base-content/70 mt-2">
+            Total no estoque: <span className="font-bold text-primary">{totalProdutosAvailable}</span> produto{totalProdutosAvailable !== 1 ? 's' : ''}
+          </p>
+        </div>
+
+        <Link
+          href="/dashboard/produtos/cadastrar"
+          className="btn btn-primary btn-md md:btn-lg gap-2 shadow-xl hover:shadow-primary/50 hover:scale-105 transition-all w-full md:w-auto"
+        >
+          <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          Novo Produto
+        </Link>
       </div>
 
-      {/* SEARCHBAR CENTRALIZADA */}
-      <div className="max-w-3xl mx-auto mb-16 px-4">
+      {/* SEARCHBAR */}
+      <div className="max-w-4xl mx-auto mb-12">
         <SearchBar />
       </div>
 
-      {/* RESULTADOS DA BUSCA */}
-      {query && (
-        <div className="mt-20 max-w-6xl mx-auto mb-20 px-0 sm:px-4">
-          {loading ? (
-            <div className="text-center py-20">
-              <span className="loading loading-spinner loading-lg text-primary"></span>
-            </div>
-          ) : error ? (
-            <div className="alert alert-error shadow-lg max-w-2xl mx-auto">
-              <span>Erro ao carregar produtos: {error.message}</span>
-            </div>
-          ) : (
-            <div className="bg-base-100 rounded-2xl shadow-2xl overflow-hidden border border-base-300">
-              <div className="bg-gradient-to-r from-primary to-pink-600 p-6 flex justify-between items-center">
-                <h3 className="text-xl md:text-2xl font-bold text-white">
-                  Resultados: "{query}" ({filteredProducts.length})
+      {/* CONTENT LIST */}
+      <div className="mt-8 max-w-full mx-auto mb-20">
+        {loading && !data ? (
+          <div className="text-center py-20">
+            <span className="loading loading-spinner loading-lg text-primary"></span>
+          </div>
+        ) : error ? (
+          <div className="alert alert-error shadow-lg max-w-2xl mx-auto">
+            <span>Erro ao carregar produtos: {error.message}</span>
+          </div>
+        ) : (
+          <div className="bg-base-100 rounded-2xl shadow-2xl overflow-hidden border border-base-300">
+            {query && (
+              <div className="bg-gradient-to-r from-primary to-pink-600 p-6 flex justify-between items-center text-white">
+                <h3 className="text-xl font-bold">
+                  Resultados para: "{query}" ({products.length})
                 </h3>
               </div>
+            )}
 
-              {filteredProducts.length === 0 ? (
-                <div className="p-20 text-center">
-                  <p className="text-xl text-base-content/60">Nenhum produto encontrado</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="table table-compact sm:table-lg w-full">
-                    <thead>
-                      <tr className="bg-base-200">
-                        <th className="font-bold">Produto</th>
-                        <th className="font-bold hidden lg:table-cell">Fornecedor</th>
-                        <th className="font-bold text-right hidden md:table-cell">Custo</th>
-                        <th className="font-bold text-right">Preço Venda</th>
-                        <th className="font-bold text-center">Estoque</th>
-                        <th className="font-bold text-center">Ações</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredProducts.map((p: any) => (
-                        <tr key={p.id} className="hover:bg-base-100 transition-colors border-b border-base-200 last:border-0">
-                          <td className="font-bold text-base-content min-w-[120px]">{p.name}</td>
-                          <td className="hidden lg:table-cell">{p.supplier || '—'}</td>
-                          <td className="text-right font-medium text-base-content/60 hidden md:table-cell whitespace-nowrap">
-                            R$ {Number(p.costPrice).toFixed(2).replace('.', ',')}
-                          </td>
-                          <td className="text-right font-black text-success whitespace-nowrap">
-                            R$ {Number(p.salePrice).toFixed(2).replace('.', ',')}
-                          </td>
-                          <td className="text-center">
-                            <div className={`inline-flex items-center justify-center px-4 py-1.5 rounded-full font-bold text-xs md:text-sm whitespace-nowrap min-w-[70px] ${
-                              p.quantity === 0 
-                                ? 'bg-error/20 text-error border border-error/30' 
-                                : p.quantity <= 10 
-                                ? 'bg-warning/20 text-warning border border-warning/30' 
-                                : 'bg-success/20 text-success border border-success/30'
-                            }`}>
-                              {p.quantity} un
-                            </div>
-                          </td>
-                          <td className="text-center">
-                            <div className="flex justify-center gap-2">
-                              <Link
-                                href={`/dashboard/produtos?edit=${p.id}`}
-                                className="btn btn-xs sm:btn-sm btn-outline btn-primary"
-                                aria-label="Editar"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                              </Link>
-
-                              <DeleteButton
-                                productId={p.id}
-                                productName={p.name}
-                                onDelete={() => refetch()}
-                              />
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-        {/* CARD PRINCIPAL */}
-        <div className="max-w-2xl mx-auto">
-          <div className="card bg-base-100 shadow-2xl rounded-3xl overflow-hidden">
-            <div className="card-body text-center py-16 px-12">
-              <div className="flex justify-center mb-8">
-                <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center">
-                  <svg className="w-12 h-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                    />
-                  </svg>
-                </div>
-              </div>
-
-              <h2 className="text-2xl font-bold text-primary mb-6">Produtos</h2>
-
-              <p className="text-base-content/70 leading-relaxed mb-10 max-w-md mx-auto">
-                Gerencie seu estoque com total controle: cadastre novos produtos,
-                edite preços, acompanhe quantidades e remova itens quando necessário.
-              </p>
-
-              <Link
-                href="/dashboard/produtos"
-                className="btn btn-primary btn-lg gap-3 px-10 shadow-xl hover:shadow-primary/50 hover:scale-105 transition-all"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            {products.length === 0 ? (
+              <div className="p-20 text-center">
+                <svg className="w-20 h-20 mx-auto text-base-300 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-                Acessar Produtos
-              </Link>
-            </div>
+                <p className="text-xl text-base-content/60 font-medium">Nenhum produto encontrado</p>
+                {query && (
+                  <button 
+                    onClick={() => router.replace('/dashboard')}
+                    className="btn btn-link btn-secondary mt-2"
+                  >
+                    Limpar busca
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="table table-compact sm:table-lg w-full">
+                  <thead>
+                    <tr className="bg-base-200">
+                      <th className="font-bold">Produto</th>
+                      <th className="font-bold hidden lg:table-cell">Fornecedor</th>
+                      <th className="font-bold text-right hidden md:table-cell whitespace-nowrap">Preço Custo</th>
+                      <th className="font-bold text-right whitespace-nowrap">Preço Venda</th>
+                      <th className="font-bold text-center">Estoque</th>
+                      <th className="font-bold text-center">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {products.map((p: any) => (
+                      <tr key={p.id} className="hover:bg-base-100 transition-colors border-b border-base-200 last:border-0">
+                        <td className="font-bold text-base md:text-lg min-w-[120px]">{p.name}</td>
+                        <td className="hidden lg:table-cell text-base-content/70">{p.supplier || '—'}</td>
+                        <td className="text-right font-medium text-base-content/60 hidden md:table-cell whitespace-nowrap">
+                          R$ {Number(p.costPrice).toFixed(2).replace('.', ',')}
+                        </td>
+                        <td className="text-right font-black text-success text-base md:text-xl whitespace-nowrap">
+                          R$ {Number(p.salePrice).toFixed(2).replace('.', ',')}
+                        </td>
+                        <td className="text-center">
+                          <div className={`inline-flex items-center justify-center px-4 py-1.5 rounded-full font-bold text-xs md:text-sm whitespace-nowrap min-w-[70px] ${
+                            p.quantity === 0 
+                              ? 'bg-error/20 text-error border border-error/30' 
+                              : p.quantity <= 10 
+                              ? 'bg-warning/20 text-warning border border-warning/30' 
+                              : 'bg-success/20 text-success border border-success/30'
+                          }`}>
+                            {p.quantity} un
+                          </div>
+                        </td>
+                        <td className="text-center">
+                          <div className="flex justify-center gap-2">
+                            <button
+                              onClick={() => handleEdit(p)}
+                              className="btn btn-xs sm:btn-sm btn-outline btn-primary"
+                              aria-label="Editar"
+                            >
+                              <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button>
+
+                            <DeleteButton
+                              productId={p.id}
+                              productName={p.name}
+                              onDelete={() => refetch()}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
-        </div>
+        )}
+      </div>
+
+      {selectedProduct && (
+        <EditModal
+          key={selectedProduct.id}
+          produto={{
+            id: selectedProduct.id,
+            name: selectedProduct.name,
+            supplier: selectedProduct.supplier,
+            salePrice: selectedProduct.salePrice,
+            costPrice: selectedProduct.costPrice,
+            quantity: selectedProduct.quantity,
+          }}
+          isOpen={editModalOpen}
+          onClose={handleClose}
+          onUpdate={atualizarProduto}
+          onRefetch={() => refetch()}
+        />
+      )}
     </div>
   )
 }
@@ -220,4 +244,4 @@ export default function DashboardPage() {
       <DashboardContent />
     </Suspense>
   )
-}
+}

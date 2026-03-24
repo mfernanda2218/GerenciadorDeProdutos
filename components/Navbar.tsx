@@ -21,8 +21,7 @@ export default function Navbar() {
           </label>
           {menuOpen && (
             <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52 border border-base-200" onClick={() => setMenuOpen(false)}>
-              <li><Link href="/dashboard">Dashboard</Link></li>
-              <li><Link href="/dashboard/produtos">Todos os Produtos</Link></li>
+              <li><Link href="/dashboard">Produtos</Link></li>
               <li><Link href="/dashboard/produtos/cadastrar">Novo Produto</Link></li>
             </ul>
           )}
@@ -36,10 +35,7 @@ export default function Navbar() {
       <div className="navbar-center hidden lg:flex">
         <ul className="menu menu-horizontal px-1 gap-2 font-medium text-base">
           <li>
-            <Link href="/dashboard" className="hover:text-primary transition-colors">Dashboard</Link>
-          </li>
-          <li>
-            <Link href="/dashboard/produtos" className="hover:text-primary transition-colors">Todos os Produtos</Link>
+            <Link href="/dashboard" className="hover:text-primary transition-colors">Produtos</Link>
           </li>
           <li>
             <Link href="/dashboard/produtos/cadastrar" className="hover:text-primary transition-colors">Novo Produto</Link>

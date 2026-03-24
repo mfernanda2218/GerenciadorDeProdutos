@@ -61,7 +61,6 @@ export async function atualizarProduto(prevState: any, formData: FormData) {
 
     // Revalidate paths to clear caches
     revalidatePath('/dashboard')
-    revalidatePath('/dashboard/produtos')
 
     return { success: true }
   } catch (err: any) {
