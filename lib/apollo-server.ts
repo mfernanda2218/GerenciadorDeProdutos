@@ -2,7 +2,7 @@ import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
 import { setContext } from '@apollo/client/link/context'
 import { headers } from 'next/headers'
 
-const getBaseUrl = () => {
+const getBaseUrl = async () => {
   // 1. Client-side
   if (typeof window !== 'undefined') return ''
 
@@ -14,8 +14,8 @@ const getBaseUrl = () => {
 
   // 4. Detecção via headers (para Server Actions & SSR)
   try {
-    const headersList = headers()
-    const host = (headersList as any).get('host')
+    const headersList = await headers()
+    const host = headersList.get('host')
     if (host) {
       const protocol = host.includes('localhost') ? 'http' : 'https'
       return `${protocol}://${host}`
@@ -28,8 +28,8 @@ const getBaseUrl = () => {
   return 'http://localhost:3000'
 }
 
-export function getApolloServerClient(cookie?: string) {
-  const baseUrl = getBaseUrl()
+export async function getApolloServerClient(cookie?: string) {
+  const baseUrl = await getBaseUrl()
   
   const httpLink = new HttpLink({
     uri: `${baseUrl}/api/graphql`,
